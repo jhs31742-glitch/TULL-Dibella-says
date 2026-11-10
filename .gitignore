@@ -1,0 +1,10 @@
+/build/
+/out/
+__pycache__/
+*.dll
+*.pdb
+*.esp
+*.ess
+*.skse
+*.log
+*.zip

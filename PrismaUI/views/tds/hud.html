@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<title>TDS 만족도 HUD</title>
+<style>
+html,body{margin:0;background:transparent;overflow:hidden;pointer-events:none}
+#hud{position:absolute;box-sizing:border-box;padding:8px;border:1px solid #ac936b99;border-radius:4px;
+background:#1d221deb;color:#eee4cb;font:14px "Malgun Gothic",sans-serif;min-width:155px}
+#hud strong{display:block;text-align:center;margin-bottom:5px}
+.track{position:relative;width:144px;height:8px;background:#ffffff26;border-radius:5px}
+.track::after{content:"";position:absolute;left:50%;height:100%;width:1px;background:#eee4cb}
+.fill{position:absolute;height:100%;border-radius:4px;background:#8fe1bb}
+#hud.bare{min-width:0;padding:0;border:0;background:transparent}
+#hud.bare strong{display:none}
+#hud.vertical{min-width:0}.vertical .track{height:110px;width:8px;margin:auto}
+.vertical .track::after{left:0;top:50%;height:1px;width:100%}
+.vertical .fill{width:100%;height:0}
+</style>
+<div id="hud" hidden><strong id="label">만족도</strong><div class="track"><div id="fill" class="fill"></div></div></div>
+<script>
+const hud=document.getElementById("hud"),fill=document.getElementById("fill"),label=document.getElementById("label");
+let vertical=false,x=0;
+function draw(){
+ const offset=x/2, size=Math.abs(offset);
+ fill.style.left=vertical?"0%":(50+Math.min(0,offset))+"%";
+ fill.style.bottom=vertical?(50+Math.min(0,offset))+"%":"0%";
+ fill.style.width=vertical?"100%":size+"%";
+ fill.style.height=vertical?size+"%":"100%";
+ fill.style.background=x<0?"#f095aa":"#8fe1bb";
+ label.textContent="만족도 "+(x>0?"+":"")+x;
+}
+window.tdsHudLayout=function(raw){
+ const values=String(raw).split(",").map(Number);
+ if(values.length!==5||values.some(value=>!Number.isFinite(value))) return;
+ vertical=values[0]===1;
+ hud.classList.toggle("vertical",vertical);
+ hud.classList.toggle("bare",values[4]===1);
+ hud.style.left=values[1]+"%";
+ hud.style.top=values[2]+"%";
+ hud.style.transformOrigin=values[1]+"% "+values[2]+"%";
+ hud.style.transform="translate(-"+values[1]+"%, -"+values[2]+"%) scale("+values[3]/100+")";
+ draw();
+};
+window.tdsHudSnapshot=function(raw){
+ let state;
+ try{state=JSON.parse(raw).progression;}catch{return;}
+ if(!state||!Number.isFinite(state.satisfaction)) return;
+ x=Math.max(-100,Math.min(100,state.satisfaction));
+ hud.hidden=false;
+ draw();
+};
+</script>
+</html>
