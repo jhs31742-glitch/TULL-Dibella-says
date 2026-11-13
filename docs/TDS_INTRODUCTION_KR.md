@@ -90,7 +90,7 @@ MO2에 설치한 뒤 TULL Dibella says.esp를 활성화하고 SKSE로 실행합�
 
 ## 다운로드
 
-[TDS 1.0.1 설치 ZIP](__TDS_DOWNLOAD_URL__)
+설치 ZIP은 툴리우스 채널 배포글에서 제공합니다. 게시글 링크는 공개 후 추가합니다.
 
 [GitHub · 공개 소스](https://github.com/jhs31742-glitch/TULL-Dibella-says)
 
