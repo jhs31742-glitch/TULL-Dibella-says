@@ -3,6 +3,7 @@
 #include "EngineRates.h"
 #include "OwnedCostPolicy.h"
 #include "SpellDamageNative.h"
+#include "RuntimePolicy.h"
 
 namespace tds::engine_effects {
 
@@ -82,10 +83,11 @@ inline void modifyHealthValue(RE::ActorValueOwner* owner, RE::ACTOR_VALUE_MODIFI
 inline bool installDamage()
 {
     if (nextDamage) return true;
-    if (REL::Module::get().version()!=SKSE::RUNTIME_SSE_1_5_97) return false;
+    const auto version=REL::Module::get().version();
+    if (!runtime::accepts({version[0],version[1],version[2],version[3]})) return false;
     REL::Relocation<std::uintptr_t> damageTable{RE::PlayerCharacter::VTABLE[0]};
     REL::Relocation<std::uintptr_t> valueTable{RE::PlayerCharacter::VTABLE[5]};
-    constexpr std::size_t damageSlot=0x104, valueSlot=0x06;
+    constexpr auto damageSlot=runtime::healthDamageSlot, valueSlot=runtime::modifyValueSlot;
     const auto damage=reinterpret_cast<const std::uintptr_t*>(damageTable.address())[damageSlot];
     const auto value=reinterpret_cast<const std::uintptr_t*>(valueTable.address())[valueSlot];
     if (!spell_native::allowedPredecessor(damage) || !spell_native::allowedPredecessor(value)) return false;

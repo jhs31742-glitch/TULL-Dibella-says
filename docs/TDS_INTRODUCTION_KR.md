@@ -1,4 +1,4 @@
-# TDS — 디벨라께서 이르시대 1.0.1
+# TDS — 디벨라께서 이르시대 1.0.2
 
 관계의 횟수와 내용이 장비·능력치·플레이 성향으로 이어지는 SexLab 성장 모드입니다.
 
@@ -74,13 +74,13 @@ TDS의 순결은 누적 관계 횟수 0회를 뜻합니다. 다른 모드의 처
 
 ## 선행 모드
 
-현재 배포 DLL은 Skyrim SE 1.5.97용입니다. AE 1.6.x용 실행 지원판은 아직 제공하지 않으며 VR은 지원하지 않습니다. POT와 기존 SexLab MatchMaker는 선행 모드가 아닙니다.
+1.0.2는 SE 1.5.97과 AE 1.6.318/323/342/353/629/640/659/1130/1170/1179의 로드·훅 경로를 지원하도록 수정했습니다. AE 실게임 검증은 아직 수행하지 않았으며 VR은 지원하지 않습니다. POT와 기존 SexLab MatchMaker는 선행 모드가 아닙니다.
 
-- [SKSE64 2.0.20](https://skse.silverlock.org/) — SE 1.5.97에 맞는 버전.
+- [게임 버전에 맞는 SKSE64](https://skse.silverlock.org/) — SE1.5.97은2.0.20, AE는 해당 게임 버전에 맞는 SKSE를 사용합니다.
 
-- [Address Library for SKSE Plugins](https://www.nexusmods.com/skyrimspecialedition/mods/32444) — SE 1.5.x용 파일.
+- [Address Library for SKSE Plugins](https://www.nexusmods.com/skyrimspecialedition/mods/32444) — SE는SE용, AE는AE용이며 정확한 게임 버전 데이터가 필요합니다.
 
-- [Backported Extended ESL Support (BEES)](https://www.nexusmods.com/skyrimspecialedition/mods/106441) — 확장 ESPFE를 SE 1.5.97에서 읽는 데 필요.
+- [Backported Extended ESL Support (BEES)](https://www.nexusmods.com/skyrimspecialedition/mods/106441) — 확장 ESPFE1.71을 읽지 못하는 구형SE/AE에서 필요합니다.1.6.1130 이상은 엔진 자체 지원을 사용합니다.
 
 - SexLab SE와 해당 버전의 선행 모드·애니메이션 — 프레임워크가 정상 작동해야 합니다. 자위하기에는 플레이어에게 맞는 활성화된 자위 애니메이션도 필요합니다.
 
@@ -90,8 +90,8 @@ MO2에 설치한 뒤 TULL Dibella says.esp를 활성화하고 SKSE로 실행합�
 
 ## 다운로드
 
-설치 ZIP은 툴리우스 채널 배포글에서 제공합니다. 게시글 링크는 공개 후 추가합니다.
+설치 ZIP은 툴리우스 채널 게시글의 실제 배포 링크를 사용하세요. GitHub Source ZIP은 설치 파일이 아닙니다.
 
 [GitHub · 공개 소스](https://github.com/jhs31742-glitch/TULL-Dibella-says)
 
-1.0.1은 1.0.0에서 장비 지급이 거절되던 문제를 수정한 버전입니다. 문제 제보 시 게임 버전·TDS 버전·사용한 기능과 재현 상황을 알려 주시고, 가능하면 SexLabLifetimeProgression.log도 첨부해 주세요.
+1.0.2는 AE 로드 제한과 SE 전용 훅 경로를 수정한 버전입니다. 전체 설치본 또는 기존1.0.x용 DLL 핫픽스를 사용하세요. AE 실게임 QA는 미실시입니다. 제보 시 게임 버전·TDS 버전·SKSE 로그·SexLabLifetimeProgression.log를 함께 알려 주세요.

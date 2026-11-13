@@ -62,7 +62,7 @@ using namespace std::chrono_literals;
 
 constexpr auto esp = "TULL Dibella says.esp";
 
-constexpr REL::Version pluginVersion{1, 0, 1, 0};
+constexpr REL::Version pluginVersion{1, 0, 2, 0};
 
 
 
@@ -70,11 +70,7 @@ constexpr bool acceptsRuntime(REL::Version version)
 
 {
 
-    // AE 1.6.x is an extension target. Each approved version needs its own
-
-    // loader and hook ABI validation before entry here.
-
-    return version == SKSE::RUNTIME_SSE_1_5_97;
+    return tds::runtime::accepts({version[0],version[1],version[2],version[3]});
 
 }
 
@@ -84,9 +80,9 @@ static_assert(acceptsRuntime({1, 5, 97, 0}));
 
 static_assert(!acceptsRuntime({1, 5, 96, 0}));
 
-static_assert(!acceptsRuntime({1, 6, 640, 0}));
+static_assert(acceptsRuntime({1, 6, 640, 0}));
 
-static_assert(!acceptsRuntime({1, 6, 1170, 0}));
+static_assert(acceptsRuntime({1, 6, 1170, 0}));
 
 static_assert(!acceptsRuntime({1, 7, 0, 0}));
 
@@ -139,6 +135,9 @@ using HitCall = void(RE::ScriptEventSourceHolder*, RE::NiPointer<RE::TESObjectRE
                      RE::NiPointer<RE::TESObjectREFR>&, RE::FormID, RE::FormID, RE::HitData&);
 
 REL::Relocation<HitCall*> originalHit;
+
+using AeHitCall = void(RE::AIProcess*, RE::HitData&);
+REL::Relocation<AeHitCall*> originalAeHit;
 
 
 
@@ -3110,11 +3109,10 @@ bool isDirectRangedHit(const RE::TESObjectWEAP& weapon, RE::FormID source, RE::F
 
 
 
-void onHit(RE::ScriptEventSourceHolder* holder, RE::NiPointer<RE::TESObjectREFR>& target,
-
-           RE::NiPointer<RE::TESObjectREFR>& aggressor, RE::FormID source,
-
-           RE::FormID projectile, RE::HitData& data)
+template <class Commit>
+void processHit(RE::NiPointer<RE::TESObjectREFR>& target,
+                RE::NiPointer<RE::TESObjectREFR>& aggressor, RE::FormID source,
+                RE::FormID projectile, RE::HitData& data, Commit commit)
 
 {
 
@@ -3376,7 +3374,7 @@ void onHit(RE::ScriptEventSourceHolder* holder, RE::NiPointer<RE::TESObjectREFR>
 
     inside = true;
 
-    originalHit(holder, target, aggressor, source, projectile, data);
+    commit();
 
     if (eligible) {
 
@@ -3546,21 +3544,57 @@ void onHit(RE::ScriptEventSourceHolder* holder, RE::NiPointer<RE::TESObjectREFR>
 
 }
 
-void installSeHit()
+// SE event dispatcher and AE AIProcess have different function signatures.
+// Keep one gameplay pipeline, but always forward the exact original ABI.
+void onHit(RE::ScriptEventSourceHolder* holder, RE::NiPointer<RE::TESObjectREFR>& target,
+           RE::NiPointer<RE::TESObjectREFR>& aggressor, RE::FormID source,
+           RE::FormID projectile, RE::HitData& data)
+{
+    processHit(target,aggressor,source,projectile,data,[&]{
+        originalHit(holder,target,aggressor,source,projectile,data);
+    });
+}
+
+void onAeHit(RE::AIProcess* process, RE::HitData& data)
+{
+    // The process owner is authoritative; handle resolution pins references
+    // across the original call and the common post-hit validation.
+    auto* owner=process ? process->GetUserData() : nullptr;
+    RE::NiPointer<RE::TESObjectREFR> target{owner};
+    const auto actor=data.aggressor.get();
+    RE::NiPointer<RE::TESObjectREFR> aggressor{actor.get()};
+    const RE::FormID source=data.weapon ? data.weapon->GetFormID() : 0;
+    const auto sourceRef=data.sourceRef.get();
+    const auto* projectileRef=sourceRef ? sourceRef->As<RE::Projectile>() : nullptr;
+    const auto* projectileBase=projectileRef ? projectileRef->GetProjectileBase() : nullptr;
+    const RE::FormID projectile=projectileBase ? projectileBase->GetFormID() : 0;
+    if (!owner) {
+        originalAeHit(process,data);
+        return;
+    }
+    processHit(target,aggressor,source,projectile,data,[&]{originalAeHit(process,data);});
+}
+
+static_assert(std::is_same_v<decltype(&onHit),HitCall*>);
+static_assert(std::is_same_v<decltype(&onAeHit),AeHitCall*>);
+
+void installWeaponHit()
 
 {
 
     const auto runtime=REL::Module::get().version();
 
-    if (runtime!=SKSE::RUNTIME_SSE_1_5_97) {
+    const auto site=tds::runtime::hitSite({runtime[0],runtime[1],runtime[2],runtime[3]});
 
-        logFile << "TDS_HOOK status=SKIPPED_SE_ABI runtime=" << runtime.string() << '\n';
+    if (!site.id) {
+
+        logFile << "TDS_HOOK status=SKIPPED_RUNTIME runtime=" << runtime.string() << '\n';
 
         return;
 
     }
 
-    const REL::Relocation<std::uintptr_t> anchor{REL::ID(37633), 0x16A};
+    const REL::Relocation<std::uintptr_t> anchor{REL::ID(site.id), static_cast<std::ptrdiff_t>(site.offset)};
 
     if (*reinterpret_cast<const std::uint8_t*>(anchor.address()) != 0xE8) {
 
@@ -3572,9 +3606,12 @@ void installSeHit()
 
     SKSE::AllocTrampoline(32);
 
-    originalHit = SKSE::GetTrampoline().write_call<5>(anchor.address(), onHit);
+    if (site.ae) originalAeHit=SKSE::GetTrampoline().write_call<5>(anchor.address(),onAeHit);
+    else originalHit=SKSE::GetTrampoline().write_call<5>(anchor.address(),onHit);
 
-    logFile << "TDS_HOOK status=CHAIN_INSTALLED direct_weapon=1\n";
+    logFile << "TDS_HOOK status=CHAIN_INSTALLED direct_weapon=1 runtime=" << runtime.string()
+            << " abi=" << (site.ae ? "AE_AIProcess" : "SE_EventDispatcher")
+            << " id=" << site.id << " offset=" << site.offset << '\n';
 
 }
 
@@ -3953,7 +3990,7 @@ void onMessage(SKSE::MessagingInterface::Message* message)
 
         if (formsReady) {
 
-            installSeHit();
+            installWeaponHit();
 
         }
 
@@ -4038,6 +4075,24 @@ void onMessage(SKSE::MessagingInterface::Message* message)
 
 
 
+// AE SKSE reads this exported metadata before calling SKSEPlugin_Load.
+// CommonLib NG runtime accessors handle pre/post-629 object layout differences.
+SKSEPluginVersion = [] {
+    SKSE::PluginVersionData data{};
+    data.PluginVersion(REL::Version{1,0,2,0});
+    data.PluginName("SexLabLifetimeProgression");
+    data.AuthorName("TULL");
+    data.UsesAddressLibrary();
+    data.UsesNoStructs(); // NG StructCompatibility::Independent, as in POT.
+    for (std::size_t i=0;i<tds::runtime::supported.size();++i) {
+        const auto v=tds::runtime::supported[i];
+        data.compatibleVersions[i]=REL::Version{static_cast<std::uint16_t>(v.major),
+            static_cast<std::uint16_t>(v.minor),static_cast<std::uint16_t>(v.build),
+            static_cast<std::uint16_t>(v.revision)}.pack();
+    }
+    return data;
+}();
+
 SKSE_EXPORT bool SKSEPlugin_Query(const SKSE::QueryInterface* skse, SKSE::PluginInfo* info)
 
 {
@@ -4084,7 +4139,8 @@ SKSEPluginLoad(const SKSE::LoadInterface* skse)
 
     }
 
-    logFile << std::unitbuf << "TDS version=1.0.1 runtime=1.5.97 ESPFE_1_71 BEES_REQUIRED MELEE_GROWTH_REQUIRE_OBSERVED_LOSS\n";
+    logFile << std::unitbuf << "TDS version=1.0.2 runtime=" << skse->RuntimeVersion().string()
+            << " ESPFE_1_71 SE_AE_MULTI_RUNTIME MELEE_GROWTH_REQUIRE_OBSERVED_LOSS\n";
 
     logger = std::make_unique<StatLogger>(logFile);
 

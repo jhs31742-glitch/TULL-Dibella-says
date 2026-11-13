@@ -2,6 +2,7 @@
 
 #include "SpellDamagePolicy.h"
 #include "NodeRules.h"
+#include "RuntimePolicy.h"
 
 namespace tds::spell_native {
 
@@ -99,9 +100,10 @@ inline bool allowedPredecessor(std::uintptr_t address)
 
 inline bool install()
 {
-    if (REL::Module::get().version()!=SKSE::RUNTIME_SSE_1_5_97) return false;
+    const auto version=REL::Module::get().version();
+    if (!runtime::accepts({version[0],version[1],version[2],version[3]})) return false;
     if (next.front()) return true;
-    constexpr std::size_t index=0x20;
+    constexpr auto index=runtime::spellValueSlot;
     std::array tables{
         REL::Relocation<std::uintptr_t>{RE::VTABLE_ValueModifierEffect[0]},
         REL::Relocation<std::uintptr_t>{RE::VTABLE_DualValueModifierEffect[0]},

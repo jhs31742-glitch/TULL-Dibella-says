@@ -15,4 +15,6 @@ HitPolicyTest.exe || exit /b 1
 cl /nologo /std:c++latest /EHsc /utf-8 /Fe:EquipmentClaimsTest.exe ..\src\EquipmentClaimsTest.cpp || exit /b 1
 EquipmentClaimsTest.exe || exit /b 1
 cl /nologo /std:c++latest /EHsc /utf-8 /Fe:EquipmentLookupTest.exe ..\src\EquipmentLookupTest.cpp || exit /b 1
-EquipmentLookupTest.exe
+EquipmentLookupTest.exe || exit /b 1
+cl /nologo /std:c++latest /EHsc /utf-8 /Fe:RuntimePolicyTest.exe ..\src\RuntimePolicyTest.cpp || exit /b 1
+RuntimePolicyTest.exe
