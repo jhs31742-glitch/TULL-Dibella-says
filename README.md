@@ -1,7 +1,35 @@
-# TULL Dibella says
+# TULL Dibella says — TDS
 
-Private CP008 development source snapshot for Skyrim SE. The currently installed partial QA release is 0.1.11.8. This snapshot is not a game release.
+SexLab 통계를 장비·만족도·타락도·성장노드에 연결하는 Skyrim 모드입니다.
 
-The native plugin targets SKSE 2.0.20 and CommonLibSSE-NG, with an ESPFE loaded through BEES and an optional PrismaUI frontend. Building requires MSVC, the project's pinned CommonLibSSE-NG headers and libraries, and their linked dependencies. The Python record generators require a local Skyrim master or the matching prior development ESP as their input, depending on the generator. Binary assets and external dependencies are not distributed here.
+## 기능
 
-Speech tier records and Native selection are implemented. Direct Destruction damage has a tested pure calculation, with the engine hook and POT coexistence pending. See the CP008 notes for the remaining game QA gates.
+- 관계 횟수에 따라 약해지는 디벨라의 순정, 강해지는 디벨라의 갈망 장비·인챈트.
+- 장비4종 세이브별 각1회 무료 수령. 추출·학습 후 다른 적합한 장비에 재부여하는 구조.
+- 만족도(일시 효과), 타락도(누적 효과),25개 성장노드와 최대50P.
+- 디벨라의 봉헌, 자동 습득 자위하기 능력과 충동 자신/대상 주문.
+- 조절 가능한 만족도 HUD와 전투 오라. 한국어 기본, English UI와 교체용 영어 ESP.
+
+[소개글](docs/TDS_INTRODUCTION_KR.md) · [플레이 흐름](docs/TDS_PLAY_FLOW_KR.md)
+
+순결은 누적 관계0회이며 자위는 별도입니다. 자위로 순결을 유지하면서 만족도·타락도 효과를 함께 받을 수 있지만, 자위만으로 관계 횟수 기반 GXP를 얻지는 못합니다.
+
+## 버전·지원 범위
+
+현재 소스 스냅샷은1.0.1입니다. 정상 장비를 잘못된 기본 자료형으로 조회해 지급이 거절되던1.0.0 오류를 정확한 WEAP/ARMO 조회로 수정했습니다. UI·ESP·무료1회 규칙·CLM1 저장 형식은 유지합니다.
+
+배포 Native의 실행 대상은 SE1.5.97/SKSE2.0.20입니다. AE1.6.x는 별도 검증 대상이며 현재 실행 허용판으로 안내하지 않습니다. VR은 지원하지 않습니다. POT·기존MatchMaker는 필수 의존성이 아닙니다.
+
+## 설치 파일과 소스의 구분
+
+이 저장소는 공개 소스와 문서를 제공합니다. 완전 설치ZIP(ESP·PEX·오라 자산 포함)은 툴리우스 채널 소개글의 배포 링크를 사용하세요. 이 저장소의 Source code ZIP만으로 설치하지 마세요. 현재 GitHub Release에 설치 파일을 업로드했다고 안내하지 않습니다.
+
+필요한 런타임은 게임에 맞는 SKSE/Address Library, SE1.5.97에서 확장ESPFE를 읽기 위한BEES, SexLab과 호환 애니메이션, 메뉴/HUD용PrismaUI입니다. 각 의존 모드의 원본 파일은 해당 제작자의 배포처에서 준비합니다.
+
+## 빌드·외부 파일
+
+Native는 MSVC와 기존 프로젝트에서 고정한 CommonLibSSE-NG 헤더/라이브러리, fmt/spdlog를 사용합니다. build-scripts의 경로는 개발 환경 예시이므로 로컬SDK 경로에 맞춰야 합니다. 저장소에 SDK·Skyrim.esm·외부모드의 ESP/PEX·실제 세이브·실게임 로그·인증정보를 포함하지 않습니다.
+
+Python 레코드/오라 생성기는 로컬 원본과 해당 기준 데이터가 필요하며, 이 저장소가 모든 외부 입력을 재배포하는 것은 아닙니다. scripts/source에는 TDS 자체 스크립트만 포함합니다. API 헤더의 원문 고지를 유지하고 의존 라이브러리 고지는 Licenses를 확인하세요. 이 저장소가 외부 프레임워크의 소유권/라이선스를 대체하지 않습니다.
+
+호스트 시험·정적 검사와 실제 게임 검증은 별개입니다. 상세 개발 내부 로그나 과거 실기PASS를 새버전 전체의 실기 보증으로 사용하지 않습니다.

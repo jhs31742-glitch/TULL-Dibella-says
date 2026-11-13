@@ -7,7 +7,7 @@
 
 namespace tds::panel {
 
-enum class Action { Open, Refresh, HardcoreOn, HardcoreOff, Recheck, NodesOn, NodesOff, NodesReset, NodeBuy, DeveloperEnter, DeveloperInput, AuraOn, AuraOff };
+enum class Action { Open, Refresh, HardcoreOn, HardcoreOff, Recheck, NodesOn, NodesOff, NodesReset, NodeBuy, DeveloperEnter, DeveloperInput, AuraOn, AuraOff, GearGrant };
 
 [[nodiscard]] inline std::optional<unsigned> parseNodePurchase(std::string_view input)
 {

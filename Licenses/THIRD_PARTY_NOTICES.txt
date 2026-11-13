@@ -1,0 +1,1 @@
+Native build uses CommonLibSSE-NG, fmt and spdlog. Their exact installed notices are included unchanged. SexLab and PrismaUI are external runtime dependencies and their binaries/scripts are not redistributed. The local MatchMaker reference ESP/scripts are not included. TDS helper scripts are newly authored. This notice does not grant rights over third-party mods.

@@ -15,10 +15,10 @@ enum class Node : unsigned {
 };
 
 inline constexpr std::array nodeCosts{
-    1, 2, 3, 2, 5, 2, 7, 3, 8, 8, 7, 4, 4, 5, 5, 5, 8, 7, 8, 11, 9, 9, 12, 12, 10
+    2, 2, 3, 2, 5, 2, 7, 3, 8, 8, 7, 4, 4, 5, 5, 5, 8, 7, 8, 11, 9, 9, 12, 12, 10
 };
 static_assert(nodeCosts.size() == static_cast<unsigned>(Node::Count));
-static_assert(std::accumulate(nodeCosts.begin(), nodeCosts.end(), 0) == 157);
+static_assert(std::accumulate(nodeCosts.begin(), nodeCosts.end(), 0) == 158);
 
 [[nodiscard]] constexpr unsigned index(Node node) { return static_cast<unsigned>(node); }
 
@@ -50,6 +50,11 @@ inline constexpr std::array exclusions{
     std::pair{Node::CorruptionResist,Node::Erosion}, std::pair{Node::LongEcho,Node::Passion},
     std::pair{Node::Solitude,Node::Affinity}, std::pair{Node::MaleResist,Node::FemaleResist}
 };
+
+[[nodiscard]] constexpr int offeringGold(const Investment& nodes,int satisfaction) {
+    if (!nodes.active(Node::Recovery1) || !nodes.active(Node::Recovery2) || satisfaction<=0) return 0;
+    return std::min(100,satisfaction)*(nodes.active(Node::Recovery3)?2:1);
+}
 
 enum class PurchaseStatus { Available, Owned, Disabled, Unverified, Prerequisite, Exclusive, Insufficient, Invalid };
 
@@ -83,7 +88,7 @@ constexpr bool purchase(Investment& state, Node node, int verifiedCount)
 
 [[nodiscard]] constexpr std::optional<std::size_t> karmaAbilityIndex(const Investment& nodes, std::int64_t karma)
 {
-    const auto tier=corruptionTier(static_cast<int>(std::clamp<std::int64_t>(karma,0,3000)));
+    const auto tier=corruptionTier(static_cast<int>(std::clamp<std::int64_t>(karma,0,corruptionThresholds.back())));
     if (tier==0) return std::nullopt;
     const auto variant=nodes.active(Node::CorruptionResist) ? 1 : nodes.active(Node::Erosion) ? 2 : 0;
     constexpr std::size_t legacyEnd=5+3*(corruptionThresholds.size()-1)+positiveSteps.size()+2*negativeSteps.size();
@@ -102,7 +107,7 @@ constexpr bool purchase(Investment& state, Node node, int verifiedCount)
     constexpr auto first=5+3*(corruptionThresholds.size()-1);
     if (percent>0) return first+step;
     const auto index=static_cast<std::size_t>(step)*2+(nodes.active(Node::SatisfactionResist)?1:0);
-    const auto karmaTier=corruptionTier(static_cast<int>(std::clamp<std::int64_t>(karma,0,3000)));
+    const auto karmaTier=purityTier(karma);
     if (karmaTier>=4) return first+positiveSteps.size()+index;
     constexpr auto lowKarmaFirst=first+positiveSteps.size()+2*negativeSteps.size()+2*(corruptionThresholds.size()-1);
     return lowKarmaFirst+static_cast<std::size_t>(karmaTier)*2*negativeSteps.size()+index;

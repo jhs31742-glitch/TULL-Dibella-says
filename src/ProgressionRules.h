@@ -14,7 +14,26 @@ inline constexpr std::array gxpThresholds{
     166, 174, 182, 191, 200
 };
 
-inline constexpr std::array corruptionThresholds{0, 100, 250, 500, 900, 1400, 2000, 3000};
+inline constexpr std::array corruptionThresholds{0, 1500, 4000, 8000, 13500, 21000, 30000, 45000};
+
+inline constexpr std::array corruptionDisplayThresholds{0,500,1500,4000,8000,13500,21000,30000,45000};
+
+[[nodiscard]] constexpr unsigned corruptionAuraSlot(std::int64_t karma)
+{
+    constexpr std::array<unsigned,9> slots{1,2,2,3,4,5,6,7,8};
+    const auto display=std::upper_bound(corruptionDisplayThresholds.begin(),corruptionDisplayThresholds.end(),
+        std::max<std::int64_t>(0,karma))-corruptionDisplayThresholds.begin()-1;
+    return slots[display];
+}
+
+
+// Accelerated purity-loss candidate, independent of permanent corruption tiers.
+inline constexpr std::array purityThresholds{0,500,1500,3000,6000};
+[[nodiscard]] constexpr int purityTier(std::int64_t karma)
+{
+    return static_cast<int>(std::upper_bound(purityThresholds.begin(),purityThresholds.end(),
+        std::max<std::int64_t>(0,karma))-purityThresholds.begin())-1;
+}
 
 struct EffectStep {
     int threshold;

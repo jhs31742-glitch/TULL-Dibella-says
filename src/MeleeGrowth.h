@@ -14,21 +14,18 @@ struct MeleeGrowth {
 {
     if (count<0) return {};
     const auto passive=passiveEffects(nodes,count);
-    const auto tier=corruptionTier(static_cast<int>(std::clamp<std::int64_t>(karma,0,3000)));
+    const auto tier=corruptionTier(static_cast<int>(std::clamp<std::int64_t>(karma,0,corruptionThresholds.back())));
     const int rate=satisfactionEffectPercent(appliedSatisfaction(x));
-    float satisfaction=rate * (rate<0 ? 0.15f : 0.12f);
-    if (rate<0) {
-        constexpr std::array residual{0.75f,0.80f,0.85f,0.90f,1.0f};
-        satisfaction*=residual[std::min(tier,4)];
-        if (nodes.active(Node::SatisfactionResist)) satisfaction*=0.25f;
-    }
+    constexpr std::array remaining{75,80,85,90,100};
+    const int residual=rate<0 ? std::max(0,remaining[purityTier(karma)]-
+        (nodes.active(Node::SatisfactionResist)?75:0)) : 100;
+    const int satisfactionTenths=rate*(rate<0?15:12)*residual/1000;
     const int karmaFlat=(tier>=3 ? 3 : 0)+(tier>=7 ? 5 : 0);
-    return {satisfaction+karmaFlat+passive.flatWeaponDamage+(count==0 ? 30 : 0),
+    return {satisfactionTenths/10.0f+karmaFlat+passive.flatWeaponDamage+(count==0 ? 30 : 0),
         passive.healthStealOnValidHit};
 }
 
-// The legacy post-hit seam can add damage and heal the attacker. A negative
-// residual would require a verified seam before the engine commits damage.
+// Signed adjustments only reduce the TDS additional pool; vanilla damage is untouched.
 struct MeleeCommit {
     float damage{};
     float pendingReduction{};
@@ -39,7 +36,7 @@ struct MeleeCommit {
     float gearDamage, int gearSteal, MeleeGrowth growth, bool observedHit)
 {
     const float flat=gearDamage+(observedHit ? growth.flat : 0.0f);
-    return {std::max(0.0f,flat),std::max(0.0f,-flat),
+    return {std::max(0.0f,flat),0.0f,
         gearSteal+(observedHit ? growth.steal : 0)};
 }
 

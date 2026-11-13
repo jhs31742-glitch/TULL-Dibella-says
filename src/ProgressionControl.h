@@ -63,16 +63,19 @@ private:
     static bool grantScene(ProgressionState& state, const Counters& before, double gameHours)
     {
         if (!state.stats || !std::isfinite(gameHours)) return false;
-        const auto award = sceneAward(before,*state.stats,state.corruption,state.soloProgress,state.nodes);
+        auto award = sceneAward(before,*state.stats,state.corruption,state.soloProgress,state.nodes);
         if (!award) return false;
         state.satisfaction.expire(gameHours);
-        if (state.satisfaction.grant(*award,gameHours)) {
-            std::move_backward(state.recentBlocks.begin(),state.recentBlocks.end()-1,state.recentBlocks.end());
-            state.recentBlocks.front()=*award;
-        }
+        const int previous=appliedSatisfaction(state.satisfaction.total());
+        const bool granted=state.satisfaction.grant(*award,gameHours);
+        award->actualBlock=granted ? award->satisfaction : 0;
+        award->effectiveChange=appliedSatisfaction(state.satisfaction.total())-previous;
         state.soloProgress=award->soloProgress;
-        state.corruption+=std::min(award->corruption,
+        award->corruption=std::min(award->corruption,
             std::numeric_limits<std::int64_t>::max()-state.corruption);
+        state.corruption+=award->corruption;
+        std::move_backward(state.recentBlocks.begin(),state.recentBlocks.end()-1,state.recentBlocks.end());
+        state.recentBlocks.front()=*award;
         return true;
     }
 
@@ -97,6 +100,12 @@ public:
         mock_.stats = mock_.lastValid = Counters{};
         developer_ = true;
         ++saveGeneration_;
+    }
+
+    bool resetMockStatistics() {
+        if (!developer_) return false;
+        setMockCounters(Counters{});
+        return resetAll();
     }
 
     bool setMockCounters(const Counters& sample)
@@ -175,6 +184,18 @@ public:
     {
         auto& state = editable();
         return state.stats && purchase(state.nodes,node,(*state.stats)[N]);
+    }
+
+    std::int64_t offerSatisfaction() {
+        auto& state=editable();
+        if (!state.stats || !state.nodes.active(Node::Recovery1)) return -1;
+        const auto positive=appliedSatisfaction(state.satisfaction.total());
+        if (positive<=0) return -1;
+        const auto gain=positive/2; // Existing X/K ledger uses integer units.
+        if (gain>std::numeric_limits<std::int64_t>::max()-state.corruption) return -1;
+        state.satisfaction.consumePositiveNet();
+        state.corruption+=gain;
+        return gain;
     }
 
     bool resetAll()

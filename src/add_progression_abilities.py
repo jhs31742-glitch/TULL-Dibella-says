@@ -1,5 +1,6 @@
 """Append independent TDS AV abilities to the verified named ESPFE."""
 import sys
+from math import copysign
 from pathlib import Path
 from struct import pack, unpack_from
 from make_esp import LOCAL, ESL_FLAG, make_record, records, subs, zstr
@@ -80,7 +81,9 @@ def low_karma_satisfaction():
     negative = ABILITIES[KARMA_END + 13:LEGACY_END]
     for tier, multiplier in enumerate((0.75, 0.80, 0.85, 0.90)):
         for name, values in negative:
-            yield (f"LowKarma{tier}{name}", tuple((av, amount * multiplier) for av, amount in values))
+            resistant = name.endswith("_1")
+            factor = max(0.0, multiplier - 0.75) * 4 if resistant else multiplier
+            yield (f"LowKarma{tier}{name}", tuple((av, amount * factor) for av, amount in values))
 
 ABILITIES += tuple(component_karma()) + tuple(low_karma_satisfaction())
 SKILL_START = len(ABILITIES)
@@ -93,6 +96,12 @@ SPEECH_START = len(ABILITIES)
 SPEECH_BONUSES = (7, 14, 21, 29, 36, 43, 50)
 ABILITIES += tuple((f"KarmaSpeech{i}", ((17, amount),))
                    for i, amount in enumerate(SPEECH_BONUSES, start=1))
+
+# Quantize only TDS-owned effect values. Resource-base penalty is separate.
+from decimal import Decimal, ROUND_DOWN
+ABILITIES = tuple((name, tuple((av, float(Decimal(str(amount)).quantize(
+    Decimal("0.1"), rounding=ROUND_DOWN))) for av, amount in entries))
+    for name, entries in ABILITIES)
 
 FIRST_EFFECT_ID = 0x100
 EXTENDED_ESL_VERSION = 1.71
@@ -160,7 +169,7 @@ def build(source, target, native_table):
         fields = [(b"EDID", zstr("TDSProgression" + name)), (b"OBND", bytes(12)),
                   (b"FULL", zstr("TDS " + name)), (b"SPIT", spell_type), (b"DESC", zstr(""))]
         for av, amount in values:
-            flags = 0x08208802 | (4 if amount < 0 else 0)
+            flags = 0x08208802 | (4 if copysign(1.0, amount) < 0 else 0)
             data = bytearray(152)
             data[:20] = pack("<IfIii", flags, 0.0, 0, -1, -1)
             data[68:72] = pack("<i", av)
@@ -211,7 +220,7 @@ def build(source, target, native_table):
             flags = unpack_from("<I", data)[0]
             assert tag == b"MGEF" and fid not in originals and (fid & 0xFFFFFF) <= 0xFFF
             assert unpack_from("<ii", data, 64) == (0, av)
-            assert bool(flags & 4) == (amount < 0) and (magnitude, area, duration) == (unpack_from("<f", pack("<f", abs(amount)))[0], 0, 0)
+            assert bool(flags & 4) == (copysign(1.0, amount) < 0) and (magnitude, area, duration) == (unpack_from("<f", pack("<f", abs(amount)))[0], 0, 0)
     with target.open("xb") as handle:
         handle.write(out)
     write_native_table(native_table)

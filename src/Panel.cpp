@@ -3,6 +3,7 @@
 
 #include "PrismaUI_API.h"
 #include "Panel.h"
+#include "HudSession.h"
 
 #include <array>
 #include <atomic>
@@ -18,8 +19,11 @@ IVPrismaUI1* api{};
 PrismaView view{};
 PrismaView hud{};
 bool hudReady{};
-std::atomic_bool hudEnabled{};
-std::string hudLayout="0,84,70,100,0";
+HudSession hudSession;
+auto& hudEnabled=hudSession.enabled;
+auto& hudLayout=hudSession.layout;
+std::uint64_t uiRevision{};
+std::string uiLanguage="ko";
 bool opening{};
 bool focusRequested{};
 bool ready{};
@@ -80,7 +84,7 @@ void acceptHotkey(unsigned packed)
 void show()
 {
     opening = false;
-    if (!api->IsValid(view)) {
+    if (!api || !view || !api->IsValid(view)) {
         return;
     }
     api->Show(view);
@@ -95,6 +99,7 @@ void show()
     focusRequested = true;
     onAction(Action::Open,0,{});
     publish();
+    api->InteropCall(view,"tdsMenuShown","");
 }
 
 void domReady(PrismaView loaded)
@@ -138,7 +143,26 @@ void command(const char* input)
         return;
     }
     const std::string_view action(input);
-    if (action == "close") {
+    if (action=="ui-language:ko" || action=="ui-language:en") {
+        const auto generation=panelGeneration.load();
+        const std::string language=action=="ui-language:en"?"en":"ko";
+        SKSE::GetTaskInterface()->AddTask([generation,language] {
+            if(generation==panelGeneration.load() && api && view && api->IsValid(view)) {
+                uiLanguage=language;
+                if(hud && hudReady && api->IsValid(hud)) api->InteropCall(hud,"tdsHudLanguage",uiLanguage.c_str());
+            }
+        });
+    } else if (action=="snapshot") {
+        const auto generation=panelGeneration.load();
+        SKSE::GetTaskInterface()->AddTask([generation] {
+            if(generation==panelGeneration.load() && api && view && ready && api->IsValid(view) && !api->IsHidden(view)) publish();
+        });
+    } else if (action.starts_with("snapshot-applied:") || action.starts_with("ui-error:")) {
+        if (action.size()>180) return;
+        std::string entry="TDS_UI_ACK ";
+        for (const unsigned char c:action) if(c>=32 && c<127) entry.push_back(static_cast<char>(c));
+        if (writeLog) writeLog(entry.c_str());
+    } else if (action == "close") {
         SKSE::GetTaskInterface()->AddTask([] { close(); });
     } else if (action=="hotkey-begin" || action=="hotkey-cancel") {
         SKSE::GetTaskInterface()->AddTask([begin=action=="hotkey-begin"] {
@@ -152,8 +176,9 @@ void command(const char* input)
         SKSE::GetTaskInterface()->AddTask([packed] { acceptHotkey(packed); });
     } else if (action=="hud-on" || action=="hud-off" || action.starts_with("hud:")) {
         if (action.size()>32) return;
-        SKSE::GetTaskInterface()->AddTask([text=std::string(action)] {
-            if (!api || !view || !ready || !api->IsValid(view) || api->IsHidden(view)) return;
+        const auto generation=panelGeneration.load();
+        SKSE::GetTaskInterface()->AddTask([text=std::string(action),generation] {
+            if (generation!=panelGeneration.load() || !api || !view || !ready || !api->IsValid(view) || api->IsHidden(view)) return;
             if (text=="hud-on" || text=="hud-off") hudEnabled=text=="hud-on";
             else {
                 auto payload=std::string_view(text).substr(4);
@@ -177,6 +202,13 @@ void command(const char* input)
         SKSE::GetTaskInterface()->AddTask([type,generation] {
             if (generation==panelGeneration.load()) onAction(type,0,{});
         });
+    } else if (action.starts_with("gear-grant:")) {
+        if(action.size()!=12 || action.back()<'0' || action.back()>'3') return;
+        const auto group=static_cast<unsigned>(action.back()-'0');
+        const auto generation=panelGeneration.load();
+        SKSE::GetTaskInterface()->AddTask([group,generation] {
+            if(generation==panelGeneration.load() && api && view && ready && api->IsValid(view) && !api->IsHidden(view) && api->HasFocus(view)) onAction(Action::GearGrant,group,{});
+        });
     } else if (action == "refresh") {
         SKSE::GetTaskInterface()->AddTask([] { onAction(Action::Refresh,0,{}); });
     } else if (action == "hardcore-on" || action == "hardcore-off") {
@@ -187,15 +219,16 @@ void command(const char* input)
         });
     } else if (action == "nodes-on" || action == "nodes-off" ||
                action == "nodes-reset-confirmed" || action.starts_with("node-buy:") ||
-               action=="qa-enter" || action.starts_with("qa:")) {
+               (action=="qa-enter" || action.starts_with("qa-enter:")) || action.starts_with("qa:")) {
         if (action.size()>160) return;
         const auto purchase=parseNodePurchase(action);
         if (action.starts_with("node-buy:") && !purchase) return;
         const auto type=action=="nodes-on" ? Action::NodesOn : action=="nodes-off" ? Action::NodesOff :
-            action=="nodes-reset-confirmed" ? Action::NodesReset : action=="qa-enter" ? Action::DeveloperEnter :
+            action=="nodes-reset-confirmed" ? Action::NodesReset : (action=="qa-enter" || action.starts_with("qa-enter:")) ? Action::DeveloperEnter :
             action.starts_with("qa:") ? Action::DeveloperInput : Action::NodeBuy;
         const auto generation=panelGeneration.load();
-        const auto payload=type==Action::DeveloperInput ? std::string(action.substr(3)) : std::string{};
+        const auto payload=type==Action::DeveloperInput ? std::string(action.substr(3)) :
+            type==Action::DeveloperEnter && action.starts_with("qa-enter:") ? std::string(action.substr(9)) : std::string{};
         SKSE::GetTaskInterface()->AddTask([type,node=purchase.value_or(0),generation,payload] {
             if (generation==panelGeneration.load() && api && view && ready &&
                 api->IsValid(view) && !api->IsHidden(view) && api->HasFocus(view)) {
@@ -253,6 +286,16 @@ public:
         unsigned captured{};
         for (auto* event = input ? *input : nullptr; event; event = event->next) {
             const auto* button = event->AsButtonEvent();
+            if (button && button->GetDevice()==RE::INPUT_DEVICE::kMouse &&
+                button->GetIDCode()==1 && button->IsDown()) {
+                const auto generation=panelGeneration.load();
+                SKSE::GetTaskInterface()->AddTask([generation] {
+                    if(generation==panelGeneration.load() && api && view && ready &&
+                       api->IsValid(view) && !api->IsHidden(view)) {
+                        api->InteropCall(view,"tdsQaRightClick","");
+                    }
+                });
+            }
             if (!button || button->GetDevice() != RE::INPUT_DEVICE::kKeyboard) {
                 continue;
             }
@@ -332,6 +375,7 @@ void tickHud()
     if (visible && api->IsHidden(hud)) {
         api->Show(hud);
         const auto data=makeSnapshot();
+        api->InteropCall(hud,"tdsHudLanguage",uiLanguage.c_str());
         api->InteropCall(hud,"tdsHudSnapshot",data.c_str());
     } else if (!visible && !api->IsHidden(hud)) {
         api->Hide(hud);
@@ -340,7 +384,7 @@ void tickHud()
 
 void publish()
 {
-    if (!api) return;
+    if (!api || !makeSnapshot) return;
     if (hudEnabled && !hud) {
         updateHud();
     }
@@ -348,13 +392,25 @@ void publish()
     const bool hudVisible=hudEnabled && hud && hudReady && api->IsValid(hud) && !api->IsHidden(hud);
     if (!panelVisible && !hudVisible) return;
     const auto data=makeSnapshot();
-    if (panelVisible) api->InteropCall(view,"tdsSnapshot",data.c_str());
-    if (hudVisible) api->InteropCall(hud,"tdsHudSnapshot",data.c_str());
+    if (panelVisible) {
+        const auto revision=++uiRevision;
+        if (!data.empty() && data.front()=='{') {
+            const auto framed=std::string("{\"uiRevision\":")+std::to_string(revision)+","+data.substr(1);
+            api->InteropCall(view,"tdsSnapshot",framed.c_str());
+            if (writeLog) writeLog(("TDS_UI_SNAPSHOT revision="+std::to_string(revision)).c_str());
+        }
+    }
+    if (hudVisible) {
+        api->InteropCall(hud,"tdsHudLanguage",uiLanguage.c_str());
+        api->InteropCall(hud,"tdsHudSnapshot",data.c_str());
+    }
 }
 
 void resetSession()
 {
     close();
+    hudSession.reset();
+    if (writeLog) writeLog("TDS_HUD session_reset enabled=0 layout=DEFAULT");
     if (api && view && api->IsValid(view)) api->Destroy(view);
     view=0;
     ready=false;

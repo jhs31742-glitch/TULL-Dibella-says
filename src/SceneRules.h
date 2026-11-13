@@ -10,21 +10,64 @@ namespace tds::progression {
 enum Counter : unsigned { N, M, F, C, S, A, V, VG, AN, OR, CounterCount };
 using Counters = std::array<int, CounterCount>;
 
+// QA composer constraints only. Real provider deltas can have other shapes.
+[[nodiscard]] constexpr bool validMockScene(const Counters& delta)
+{
+    if (std::ranges::any_of(delta, [](int value) { return value < 0; })) return false;
+    if (delta[N]>1 || delta[S]>1 || delta[N]+delta[S]!=1) return false;
+    if (delta[A]>1 || delta[V]>1 || (delta[A] && delta[V])) return false;
+    const bool hasPartner=delta[M] || delta[F] || delta[C];
+    if (delta[N] ? !hasPartner : (hasPartner || delta[A] || delta[V])) return false;
+    return delta[VG] || delta[AN] || delta[OR];
+}
+
+
 struct SceneAward {
     std::int64_t satisfaction{};
     std::int64_t corruption{};
-    int soloProgress{};  // N=0 ramp progress, capped at the final step.
+    int soloProgress{};  // S increases since reset, capped at 12.
     int durationHours{};
+    std::optional<std::int64_t> actualBlock;
+    std::optional<int> effectiveChange;
+    std::optional<std::int64_t> soloBaseK;
+    std::optional<std::int64_t> soloExtraK;
 };
 
 constexpr int soloSatisfaction(int n)
 {
-    if (n==0) return 10;
-    if (n<=12) return 8;
-    if (n<=50) return 6;
-    if (n<=150) return 4;
-    if (n<=500) return 2;
-    return 1;
+    if (n<=12) return 24-n;
+    if (n<=50) return -2;
+    if (n<=100) return -4;
+    if (n<200) return -6;
+    return -8;
+}
+
+constexpr int soloCorruption(int n)
+{
+    if (n<=12) return 2*n+2;
+    if (n<=50) return 28;
+    if (n<=100) return 32;
+    if (n<200) return 36;
+    return 40;
+}
+
+inline constexpr std::array karmaFirst{2,1,1,3,0,5,5,1,6,1};
+inline constexpr std::array karmaFinal{36,36,36,42,0,42,54,36,60,36};
+
+[[nodiscard]] constexpr std::int64_t karmaNumerator11(unsigned counter, int before, int after)
+{
+    std::int64_t result=0;
+    for (int t=std::min(before,12)+1; t<=std::min(after,12); ++t) {
+        result+=11*karmaFirst[counter]+(karmaFinal[counter]-karmaFirst[counter])*(t-1);
+    }
+    const auto tail=static_cast<std::int64_t>(after)-std::max(before,12);
+    return result+std::max<std::int64_t>(0,tail)*11*karmaFinal[counter];
+}
+
+[[nodiscard]] constexpr std::int64_t soloRampSum(int progress, int delta)
+{
+    const int ramp=std::min(delta,12-progress);
+    return std::int64_t{ramp}*(2*progress+ramp+1)/2+std::int64_t{delta-ramp}*12;
 }
 
 [[nodiscard]] constexpr std::optional<SceneAward> sceneAward(
@@ -40,37 +83,38 @@ constexpr int soloSatisfaction(int n)
     if (before==after) return SceneAward{0,0,soloProgress,0};
 
     std::array xWeights{6,2,2,-11,soloSatisfaction(after[N]),5,-15,4,-7,2};
-    const std::array kWeights{2,1,1,3,1,5,1,1,2,1};
-    if (nodes.active(Node::Anal2)) xWeights[AN]=7;
-    else if (nodes.active(Node::Anal1)) xWeights[AN]=1;
-    if (nodes.active(Node::Creature2)) xWeights[C]=11;
-    else if (nodes.active(Node::Creature1)) xWeights[C]=1;
-    if (nodes.active(Node::Victim2)) xWeights[V]=15;
-    else if (nodes.active(Node::Victim1)) xWeights[V]=1;
+    std::array<int,CounterCount> kWeights{};
+    if (nodes.active(Node::Anal2)) { xWeights[AN]=7; kWeights[AN]+=2; }
+    else if (nodes.active(Node::Anal1)) { xWeights[AN]=1; kWeights[AN]+=1; }
+    if (nodes.active(Node::Creature2)) { xWeights[C]=11; kWeights[C]+=4; }
+    else if (nodes.active(Node::Creature1)) { xWeights[C]=1; kWeights[C]+=2; }
+    if (nodes.active(Node::Victim2)) { xWeights[V]=15; kWeights[V]+=6; }
+    else if (nodes.active(Node::Victim1)) { xWeights[V]=1; kWeights[V]+=3; }
     if (nodes.active(Node::Solitude)) { xWeights[S]+=3; xWeights[N]-=2; }
-    if (nodes.active(Node::Affinity)) { xWeights[N]+=3; xWeights[S]-=2; }
+    if (nodes.active(Node::Affinity)) { xWeights[N]+=3; xWeights[S]-=2; kWeights[N]-=1; kWeights[S]+=1; }
     if (nodes.active(Node::Dominance)) { xWeights[A]+=4; xWeights[V]-=4; }
 
-    std::int64_t x=0,k=0;
+    constexpr std::array purityBonus{20,15,10,5,0};
+    const int bonus=purityBonus[purityTier(corruption)];
+    std::int64_t xHundredths=0,k11=0;
     for (unsigned i=0;i<delta.size();++i) {
-        x+=std::int64_t{delta[i]}*xWeights[i];
-        k+=std::int64_t{delta[i]}*kWeights[i];
+        xHundredths+=std::int64_t{delta[i]}*xWeights[i]*(xWeights[i]>0?100+bonus:100);
+        if (i!=S) k11+=std::max<std::int64_t>(0,karmaNumerator11(i,before[i],after[i])+std::int64_t{delta[i]}*kWeights[i]*11);
     }
-    if (after[N]==0) {
-        const int ramp=std::min(delta[S],12-soloProgress);
-        k-=delta[S];
-        k+=std::int64_t{ramp}*(2*soloProgress+ramp+1)/2;
-        k+=std::int64_t{delta[S]-ramp}*12;
-        soloProgress+=ramp;
-    }
-    const int bonus=corruption<100?20:corruption<250?15:corruption<500?10:corruption<900?5:0;
-    std::int64_t xHundredths=x*(x>0?100+bonus:100);
+    const auto ramp=soloRampSum(soloProgress,delta[S]);
+    const std::int64_t soloBase=after[N]==0 ? 3*ramp : std::int64_t{delta[S]}*soloCorruption(after[N]);
+    const std::int64_t soloExtra=4*ramp;
+    k11+=std::max<std::int64_t>(0,soloBase+soloExtra+std::int64_t{delta[S]}*kWeights[S])*11;
+    soloProgress+=std::min(delta[S],12-soloProgress);
     if (nodes.active(Node::Erosion)) {
         xHundredths-=300;
-        k=k*16/10;
+        k11=k11*8;
     }
     const int duration=nodes.active(Node::LongEcho)?16:nodes.active(Node::Passion)?4:8;
-    return SceneAward{xHundredths/100,k,soloProgress,duration};
+    SceneAward result{xHundredths/100,k11/(nodes.active(Node::Erosion)?55:11),soloProgress,duration};
+    result.soloBaseK=soloBase;
+    result.soloExtraK=soloExtra;
+    return result;
 }
 
 struct SatisfactionBlock {
@@ -102,6 +146,17 @@ public:
         return true;
     }
 
+    // Remove the positive net without changing remaining block deadlines.
+    std::int64_t consumePositiveNet() {
+        auto remaining=std::max<std::int64_t>(0,total());
+        const auto consumed=remaining;
+        for (auto& block:blocks_) if (block.value>0 && remaining>0) {
+            const auto take=std::min(block.value,remaining);
+            block.value-=take; remaining-=take;
+        }
+        std::erase_if(blocks_,[](const auto& block){return block.value==0;});
+        return consumed;
+    }
     [[nodiscard]] const std::vector<SatisfactionBlock>& records() const { return blocks_; }
 
     bool restore(SatisfactionBlock block)

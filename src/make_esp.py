@@ -12,8 +12,8 @@ VANILLA_IDS = {0x1397E, 0x12EB7, 0x3B97C, 0x9171B, 0x10FB95, 0x10FB77,
                0x4605A, 0x493AA, 0x10F814, 0x954D7}
 GROUPS = ("WeaponGrowth", "WeaponDecay", "AccessoryGrowth", "AccessoryDecay")
 DISPLAY_NAMES = ("디벨라의 갈망", "디벨라의 순정", "디벨라의 갈망", "디벨라의 순정")
-ITEMS = (0x12EB7, 0x1397E, 0x3B97C, 0x9171B)
-ITEM_NAMES = ("Iron Sword", "Iron Dagger", "Silver Ring", "Silver Necklace")
+ITEMS = (0x12EB7, 0x12EB7, 0x3B97C, 0x9171B)
+ITEM_NAMES = ("철검", "철검", "Silver Ring", "Silver Necklace")
 # ActorValue values from CommonLibSSE ActorValues.h. Resource/AV lists mirror StageData.cpp.
 VALUES = ((24, 26), (24, 26), (39, 25, 26, 45, 40, 44, 41, 43, 42, 83),
           (39, 25, 26, 45, 40, 44, 41, 43, 42, 83))
@@ -93,10 +93,11 @@ def write(vanilla_path, csv_path, output_path):
         pack_into("<IfIii", marker, 0, 0x08200A12, 0.0, 0, -1, -1)
         marker[64:80] = template[64:80]
         pack_into("<II", marker, 64, 1, 24)  # inert Script archetype, no attached script
-        pack_into("<i", marker, 80, -1)
+        pack_into("<i", marker, 88, -1)
+        pack_into("<II", marker, 80, 1 if is_weapon else 0, 1 if is_weapon else 0)
         pack_into("<f", marker, 104, 1.0)
         add(b"MGEF", 0x820 + g, [(b"EDID", zstr("TDSMarker" + name)), (b"FULL", zstr(DISPLAY_NAMES[g])),
-            (b"DATA", marker), (b"DNAM", zstr("TDS " + name))])
+            (b"DATA", marker), (b"DNAM", zstr(DISPLAY_NAMES[g]))])
 
         ench_source = 0x10FB95 if is_weapon else 0x10FB77
         ench = bytearray(dict(vanilla[ench_source][1])[b"ENIT"])
@@ -128,7 +129,7 @@ def write(vanilla_path, csv_path, output_path):
             pack_into("<IfIii", data, 0, 0x08208802, 0.0, 0, -1, -1)
             # Constant, self-delivered engine-owned ability using the vanilla DATA layout.
             pack_into("<i", data, 68, av)
-            pack_into("<i", data, 80, -1)
+            pack_into("<i", data, 88, -1)
             pack_into("<f", data, 104, 1.0)
             # Value Modifier stacks independently across the four owned spells.
             pack_into("<I", data, 64, 0)

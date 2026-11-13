@@ -19,7 +19,8 @@ background:#1d221deb;color:#eee4cb;font:14px "Malgun Gothic",sans-serif;min-widt
 <div id="hud" hidden><strong id="label">만족도</strong><div class="track"><div id="fill" class="fill"></div></div></div>
 <script>
 const hud=document.getElementById("hud"),fill=document.getElementById("fill"),label=document.getElementById("label");
-let vertical=false,x=0;
+let vertical=false,x=0,hudLanguage="ko";
+window.tdsHudLanguage=function(raw){hudLanguage=raw==="en"?"en":"ko";draw();};
 function draw(){
  const offset=x/2, size=Math.abs(offset);
  fill.style.left=vertical?"0%":(50+Math.min(0,offset))+"%";
@@ -27,7 +28,8 @@ function draw(){
  fill.style.width=vertical?"100%":size+"%";
  fill.style.height=vertical?size+"%":"100%";
  fill.style.background=x<0?"#f095aa":"#8fe1bb";
- label.textContent="만족도 "+(x>0?"+":"")+x;
+ const english=hudLanguage==="en";
+ label.textContent=(english?"Satisfaction ":"만족도 ")+(x>0?"+":"")+x;
 }
 window.tdsHudLayout=function(raw){
  const values=String(raw).split(",").map(Number);

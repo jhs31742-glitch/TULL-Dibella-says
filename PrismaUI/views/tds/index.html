@@ -172,7 +172,9 @@ kbd{padding:4px 8px;background:#292a35;border:1px solid var(--line);color:var(--
 .mock-step button{padding:2px;font-size:11px}
 .mock-step input{width:100%;min-width:0;appearance:textfield}
 .mock-step input::-webkit-inner-spin-button,.mock-step input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
-.mock-tabs{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.qa-scene-strip{display:flex;align-items:stretch;gap:6px;flex-wrap:wrap}
+#qaSceneChoices{display:flex;gap:4px;flex-wrap:wrap}
+.qa-scene-choice{min-width:43px;padding:3px 5px;text-align:center}.qa-scene-choice strong{display:block;font-size:18px}.qa-scene-choice[aria-pressed="true"]{border-color:#f3cd8e;color:#f3cd8e}.qa-scene-choice:disabled,#qaSampleScene[aria-disabled="true"]{opacity:.45}.mock-tabs{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px;border-bottom:1px solid var(--line);padding-bottom:8px}
 .mock-tabs button{background:#23232c;border-color:var(--line);font-size:14px}
 .mock-tabs button[aria-pressed="true"]{background:#332a23;border-color:#f3cd8e;color:#f3cd8e}
 main{display:grid;grid-template-rows:auto auto minmax(0,1fr);height:min(760px,100vh);overflow:hidden}
@@ -250,7 +252,13 @@ main{grid-template-rows:auto auto auto;height:auto;overflow:visible}
 @media(max-width:760px){.overview-effect-list{grid-template-columns:1fr}}
 .scene-values{border-collapse:collapse;width:100%;margin:8px 0 14px}
 .scene-values th,.scene-values td{padding:4px 8px;text-align:left;border-bottom:1px solid var(--line)}
-.scene-values td{font-variant-numeric:tabular-nums}
+.scene-values td{font-variant-numeric:tabular-nums;text-align:right}
+.scene-values thead th{background:#282d39;color:#f4d6a2;text-align:right}
+.scene-values thead th:first-child{text-align:left}
+.scene-values tbody tr:nth-child(even){background:#20242e}
+.scene-values tbody td{border-left:1px solid var(--line)}
+.scene-values td.effect-positive{color:#83e8ba;font-weight:700}
+.scene-values td.effect-negative{color:#ff909d;font-weight:700}
 .overview-effect-list li{position:relative;padding:7px 9px 7px 20px;line-height:1.45;border-top:1px solid #ffffff38;overflow-wrap:anywhere}
 .overview-effect-list li::before{content:"•";position:absolute;left:7px}
 @media(max-width:620px){.overview-effect-columns.has-penalties{grid-template-columns:1fr}}
@@ -279,7 +287,8 @@ main{grid-template-rows:auto auto auto;height:auto;overflow:visible}
 .page-title-row .node-status{padding:4px 9px;font-size:13px}
 .page-title-row .node-status:not(:disabled){border-color:#548970;background:#263f35;color:#a3ebca}
 #disableNodeDialog{width:min(420px,calc(100% - 24px));box-sizing:border-box}
-.node-lock:not([hidden]){position:absolute;inset:0;z-index:2;display:grid;place-items:center;background:rgba(10,10,16,.78)}
+.node-board-surface{position:relative}
+.node-lock:not([hidden]){position:absolute;inset:0 0 auto;min-height:100%;z-index:2;display:grid;place-items:center;background:rgba(10,10,16,.78)}
 .node-lock-card{display:grid;justify-items:center;gap:10px;padding:20px 28px;text-align:center;background:#202029;border:1px solid #8d7450}
 .node-lock-card p{margin:0}
 .node-lock-icon{font-size:32px;line-height:1}
@@ -312,8 +321,27 @@ body.hud-layout-active main{visibility:hidden}
 .segmented button{border:0;background:#20251e;color:#d7cdb8;padding:6px 9px}
 .segmented button+button{border-left:1px solid #84734d}
 .segmented button[aria-pressed="true"]{background:#a48854;color:#18170e}
+#hardcoreSettings{display:none!important}
+#sceneWeightRows td:nth-child(4),#sceneRecentRows td:nth-child(5){color:#ff89cc}
+#developerPasswordDialog{width:min(420px,calc(100vw - 32px))}
+#developerPasswordForm{text-align:left}
+#resetQaStatisticsDialog{width:min(460px,calc(100vw - 32px))}
+#developerPasswordDialog p,#resetQaStatisticsDialog p{font-size:14px;line-height:1.6}
+#developerPassword{display:block;box-sizing:border-box;width:100%;margin:8px 0;padding:8px 10px}
+.compact-dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+.mock-reset-actions{display:flex;justify-content:flex-end;margin-bottom:12px}
+.developer-warnings{margin:12px 0 18px;padding:12px 12px 12px 28px;border:1px solid #8d7450;background:#30291f;font-size:14px;line-height:1.55}.developer-warnings li+li{margin-top:7px}.developer-warnings strong{color:#ffc4b8}
+.developer-no-return{color:#ff8796;font-weight:700}
+.consent-input{position:relative}.consent-hint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#a9a69f;opacity:.45;letter-spacing:.18em;pointer-events:none}#developerPassword{text-align:center;background:transparent;position:relative}
+.ui-language{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px}html[lang="en"] .node{font-size:12px}
 </style>
-<main class="qa-pending"><p id="qaPendingStatus" role="status">TDS 연결을 기다리는 중입니다.</p>
+<style>
+.gear-detail .gear-card{display:flex;flex-direction:column}.gear-detail .gear-card dl{flex:1}.equipment-browser{grid-template-rows:480px}.gear-card dl div{padding:6px 0;line-height:19px}
+.gear-grant-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:10px;padding-top:12px;border-top:1px solid #ffffff30}.gear-grant-bar small{display:block;color:#c8d5d3;font-size:12px;margin-bottom:4px}.gear-grant-bar strong{display:block;color:var(--gear-title);font-weight:500}
+.gear-grant-button{flex-shrink:0;min-width:128px;border:1px solid #c5aa6a;background:linear-gradient(#5e4d30,#3a3225);color:#ffe3a0;padding:11px 17px;border-radius:3px;font:inherit;cursor:pointer}.gear-grant-button:hover:not(:disabled){background:#6f5832}.gear-grant-button:disabled{opacity:.5;cursor:default}.gear-grant-button:focus-visible{outline:2px solid #ffe3a0;outline-offset:3px}
+#gearGrantDialog{width:min(440px,calc(100vw - 32px));padding:24px;border:1px solid #b99e64;background:#20241f;color:#eee4cb}#gearGrantDialog::backdrop{background:#070b096b}#gearGrantDialog h2{margin:0 0 17px;font-size:23px}#gearGrantItem{padding:15px;border:1px solid #d5ba7855;background:#ad955f14;font-size:18px;color:#ffdb86}#gearGrantDialog p{font-size:14px;color:#c7c4b8;line-height:1.6}#gearGrantDialog .compact-dialog-actions button{min-width:72px}
+#grantToast{position:fixed;left:50%;bottom:35px;transform:translateX(-50%);z-index:15;background:#202b22;border:1px solid #92cba1;color:#c9f4d1;padding:11px 22px;border-radius:4px;box-shadow:0 8px 22px #0006}#grantToast[hidden]{display:none}
+</style><dialog id="gearGrantDialog" aria-labelledby="gearGrantTitle"><h2 id="gearGrantTitle">이 장비를 받으시겠습니까?</h2><div id="gearGrantItem"></div><p>소지품에 1개 추가합니다.<br>종류별로 한 번만 받을 수 있으며 자동으로 장착하지 않습니다.</p><div class="compact-dialog-actions"><button type="button" id="gearGrantCancel">취소</button><button type="button" class="gear-grant-button" id="gearGrantConfirm">받기</button></div></dialog><div id="grantToast" role="status" hidden></div><main class="qa-pending"><p id="qaPendingStatus" role="status">TDS 연결을 기다리는 중입니다.</p>
 <header><div><small>TULL DIBELLA SAYS</small><div class="page-title-row"><h1 id="pageTitle">개요</h1><button id="disableNodeSystem" type="button" class="effect-button node-status" aria-haspopup="dialog" aria-label="성장노드 활성화 중. 비활성화 옵션 열기" hidden>활성화 중</button></div></div>
 </header>
 <button type="button" id="closeTds" class="effect-button" style="position:absolute;right:20px;top:20px">닫기</button>
@@ -322,7 +350,7 @@ body.hud-layout-active main{visibility:hidden}
  <a href="#tab-equipment">장비</a>
  <a href="#tab-nodes">성장 노드</a>
  <a href="#tab-settings">설정</a>
- <a id="developerTab" href="#tab-developer" hidden>개발자</a>
+ <a id="developerTab" href="#tab-developer" hidden>DEV</a>
 </nav>
 <div id="pageViewport" class="page-viewport" tabindex="0" aria-label="현재 탭 내용">
 <div id="nodes" hidden>
@@ -340,36 +368,37 @@ body.hud-layout-active main{visibility:hidden}
  <div class="meter-panel">
   <div class="meter-heading"><h2>타락도</h2><output id="kValue">250</output></div>
   <div id="kStage" class="stage">유혹의 기척</div>
-  <div id="kMeter" class="track" role="meter" aria-label="타락도 게이지" aria-valuemin="0" aria-valuemax="3000" aria-valuenow="250"><span id="kFill" class="fill"></span></div>
+  <div id="kMeter" class="track" role="meter" aria-label="타락도 게이지" aria-valuemin="0" aria-valuemax="45000" aria-valuenow="250"><span id="kFill" class="fill"></span></div>
 
   <div class="k-colors" aria-hidden="true"></div><button type="button" id="showKarmaEffects" class="effect-button meter-effect" aria-haspopup="dialog">타락도 영구 효과</button>
  </div>
 </section>
 <details class="demo"><summary>시안 전용 · 미리보기 수치 조절</summary><div class="demo-controls">
 <label for="xInput">만족도 <input id="xInput" type="range" min="-100" max="100" value="30"></label>
-<label for="kInput">타락도 <input id="kInput" type="range" min="0" max="3600" value="250"></label>
+<label for="kInput">타락도 <input id="kInput" type="range" min="0" max="45000" value="250"></label>
 </div></details>
 <section class="frame" aria-label="중앙 성장 노드 보드">
-<div id="board" class="board"></div>
-<div class="node-board-footer"><button type="button" class="effect-button" id="showSceneStats" aria-haspopup="dialog">통계와 획득량</button><div class="node-control-actions"><button type="button" id="showNodeEffects" class="effect-button" aria-haspopup="dialog">적용 중인 노드 효과</button> <button type="button" id="openNodeReset" class="effect-button" aria-haspopup="dialog">성장노드 전체 초기화</button></div></div>
-</section>
-
-</div>
+<div class="node-board-surface"><div id="board" class="board"></div>
 <div id="nodeLock" class="node-lock" hidden>
  <div class="node-lock-card">
   <span class="node-lock-icon" aria-hidden="true">🔒</span>
   <strong>성장노드 비활성화됨</strong>
-  <p class="muted">구매 기록과 투자 GXP는 유지됩니다.</p>
+  <p class="muted">구매 노드 효과만 중지됩니다. 만족도와 타락도는 계속 반영됩니다.</p>
   <button type="button" id="enableNodeSystem" class="effect-button">성장노드 활성화</button>
  </div>
 </div>
 </div>
+<div class="node-board-footer"><button type="button" class="effect-button" id="showSceneStats" aria-haspopup="dialog">통계와 획득량</button><div class="node-control-actions"><button type="button" id="showNodeEffects" class="effect-button" aria-haspopup="dialog">적용 중인 노드 효과</button> <button type="button" id="openNodeReset" class="effect-button" aria-haspopup="dialog">성장노드 전체 초기화</button></div></div>
+</section>
+</div>
+</div>
+
 <section id="overview" aria-label="개요">
  <div class="overview-stats">
   <div class="overview-stat"><span>누적 횟수</span><strong><output id="overviewCount">0</output> <small>회</small></strong></div>
   <div class="overview-stat"><span>자위 횟수</span><strong><output id="overviewSolo">12</output> <small>회</small></strong></div>
   <div class="overview-meters"><div class="overview-meter"><div class="overview-meter-heading"><span>만족도</span><span id="overviewSatisfactionStage">만족</span></div><div id="overviewXTrack" class="track overview-gauge" role="meter" aria-label="만족도" aria-valuemin="-100" aria-valuemax="100" aria-valuenow="30"><span class="fill"></span><span class="center"></span></div></div>
-  <div class="overview-meter"><div class="overview-meter-heading"><span>타락도</span><span id="overviewKarmaStage">유혹의 기척</span></div><div id="overviewKTrack" class="track overview-gauge" role="meter" aria-label="타락도" aria-valuemin="0" aria-valuemax="3000" aria-valuenow="250"><span class="fill"></span></div></div></div>
+  <div class="overview-meter"><div class="overview-meter-heading"><span>타락도</span><span id="overviewKarmaStage">유혹의 기척</span></div><div id="overviewKTrack" class="track overview-gauge" role="meter" aria-label="타락도" aria-valuemin="0" aria-valuemax="45000" aria-valuenow="250"><span class="fill"></span></div></div></div>
  </div>
  <p class="muted" id="overviewSatisfactionTime" hidden></p>
  
@@ -377,7 +406,7 @@ body.hud-layout-active main{visibility:hidden}
   <div class="purity-heading"><div><small>누적 0회 · 적용 중</small><h2 id="purityTitle">순결</h2></div><p>첫 관계가 기록되기 전까지 선천 효과를 받습니다.</p></div>
   <div class="overview-effect-columns"><section class="overview-effect-panel"><h3 class="effect-positive">긍정적 효과</h3><ul id="purityEffects" class="overview-effect-list">
    <li>최대 체력·매지카·지구력 <strong class="effect-positive">각 +200</strong></li>
-   <li>무기 고정 피해 <strong class="effect-positive">+30</strong></li>
+   <li>근접무기 추가 고정 피해 <strong class="effect-positive">+30</strong></li>
    <li>방어력 <strong class="effect-positive">+100</strong></li>
    <li>체력·매지카·지구력 재생률 <strong class="effect-positive">각 +80%</strong></li>
    <li><span class="skill-hover" tabindex="0" aria-describedby="puritySkillList">지정 스킬<span id="puritySkillList" class="skill-tooltip" role="tooltip">한손·양손·궁술·방어·중갑·경갑·회복·파괴</span></span> <strong class="effect-positive">각 +50</strong></li>
@@ -413,10 +442,10 @@ body.hud-layout-active main{visibility:hidden}
   <button type="button" data-gear="accessory-growth" aria-controls="accessory-growth" aria-pressed="false">액세서리</button>
  </section>
 </aside>
-  <div class="gear-details"><section id='weapon-growth' class='gear-detail' hidden><article class='gear-card'><div class='gear-detail-head'><h3>디벨라의 갈망 · 무기</h3><span class='equip-state equipped'>장착 중</span></div><p class='muted'>누적 횟수가 늘수록 강화됩니다.</p><div class='gear-stage'><span>현재 단계</span><strong>23 / 40</strong></div><div class='track' role='meter' aria-label='디벨라의 갈망 단계' aria-valuemin='0' aria-valuemax='40' aria-valuenow='23'><span class='fill' style='width:57.5%'></span></div><dl><div><dt>무기 고정 피해</dt><dd>+20</dd></div><div><dt>무기 피해</dt><dd>+9%</dd></div><div><dt>최대 체력</dt><dd>+56</dd></div><div><dt>최대 지구력</dt><dd>+56</dd></div><div><dt>적중 시 체력 흡수</dt><dd>2</dd></div></dl></article></section>
-<section id='weapon-decay' class='gear-detail'><article class='gear-card decay'><div class='gear-detail-head'><h3>디벨라의 순정 · 무기</h3><span class='equip-state'>미장착</span></div><p class='muted'>누적 횟수가 늘수록 보너스가 줄어듭니다.</p><div class='gear-stage'><span>현재 단계</span><strong>17 / 40</strong></div><div class='track' role='meter' aria-label='디벨라의 순정 단계' aria-valuemin='0' aria-valuemax='40' aria-valuenow='17'><span class='fill' style='width:42.5%'></span></div><dl><div><dt>무기 고정 피해</dt><dd>+16</dd></div><div><dt>무기 피해</dt><dd>+7%</dd></div><div><dt>최대 체력</dt><dd>+44</dd></div><div><dt>최대 지구력</dt><dd>+44</dd></div><div><dt>적중 시 체력 흡수</dt><dd>1</dd></div></dl></article></section>
-<section id='accessory-growth' class='gear-detail' hidden><article class='gear-card'><div class='gear-detail-head'><h3>디벨라의 갈망 · 액세서리</h3><span class='equip-state'>미장착</span></div><p class='muted'>누적 횟수가 늘수록 강화됩니다.</p><div class='gear-stage'><span>현재 단계</span><strong>23 / 40</strong></div><div class='track' role='meter' aria-label='디벨라의 갈망 단계' aria-valuemin='0' aria-valuemax='40' aria-valuenow='23'><span class='fill' style='width:57.5%'></span></div><dl><div><dt>방어력</dt><dd>+17</dd></div><div><dt>최대 매지카·지구력</dt><dd>각 +56</dd></div><div><dt>질병·독 저항</dt><dd>각 +28%p</dd></div><div><dt>마법 저항</dt><dd>+6%p</dd></div><div><dt>화염·냉기·전격 저항</dt><dd>각 +17%p</dd></div><div><dt>주문 흡수</dt><dd>+6%p</dd></div></dl></article></section>
-<section id='accessory-decay' class='gear-detail' hidden><article class='gear-card decay'><div class='gear-detail-head'><h3>디벨라의 순정 · 액세서리</h3><span class='equip-state equipped'>장착 중</span></div><p class='muted'>누적 횟수가 늘수록 보너스가 줄어듭니다.</p><div class='gear-stage'><span>현재 단계</span><strong>17 / 40</strong></div><div class='track' role='meter' aria-label='디벨라의 순정 단계' aria-valuemin='0' aria-valuemax='40' aria-valuenow='17'><span class='fill' style='width:42.5%'></span></div><dl><div><dt>방어력</dt><dd>+13</dd></div><div><dt>최대 매지카·지구력</dt><dd>각 +44</dd></div><div><dt>질병·독 저항</dt><dd>각 +22%p</dd></div><div><dt>마법 저항</dt><dd>+4%p</dd></div><div><dt>화염·냉기·전격 저항</dt><dd>각 +13%p</dd></div><div><dt>주문 흡수</dt><dd>+4%p</dd></div></dl></article></section></div>
+  <div class="gear-details"><section id='weapon-growth' class='gear-detail' hidden><article class='gear-card'><div class='gear-detail-head'><h3>디벨라의 갈망 · 무기</h3><span class='equip-state equipped'>장착 중</span></div><p class='muted'>디벨라의 갈망</p><div class='gear-stage'><span>현재 단계</span><strong>23 / 40</strong></div><div class='track' role='meter' aria-label='디벨라의 갈망 단계' aria-valuemin='0' aria-valuemax='40' aria-valuenow='23'><span class='fill' style='width:57.5%'></span></div><dl><div><dt>근접무기 추가 고정 피해</dt><dd>+20</dd></div><div><dt>무기 피해</dt><dd>+9%</dd></div><div><dt>최대 체력</dt><dd>+56</dd></div><div><dt>최대 지구력</dt><dd>+56</dd></div><div><dt>적중 시 체력 흡수</dt><dd>2</dd></div></dl><footer class="gear-grant-bar"><div><small>받을 장비 · 1개</small><strong>디벨라의 갈망 · 철검</strong></div><button type="button" class="gear-grant-button" data-grant="0" disabled>장비 받기</button></footer></article></section>
+<section id='weapon-decay' class='gear-detail'><article class='gear-card decay'><div class='gear-detail-head'><h3>디벨라의 순정 · 무기</h3><span class='equip-state'>미장착</span></div><p class='muted'>디벨라의 순정</p><div class='gear-stage'><span>현재 단계</span><strong>17 / 40</strong></div><div class='track' role='meter' aria-label='디벨라의 순정 단계' aria-valuemin='0' aria-valuemax='40' aria-valuenow='17'><span class='fill' style='width:42.5%'></span></div><dl><div><dt>근접무기 추가 고정 피해</dt><dd>+16</dd></div><div><dt>무기 피해</dt><dd>+7%</dd></div><div><dt>최대 체력</dt><dd>+44</dd></div><div><dt>최대 지구력</dt><dd>+44</dd></div><div><dt>적중 시 체력 흡수</dt><dd>1</dd></div></dl><footer class="gear-grant-bar"><div><small>받을 장비 · 1개</small><strong>디벨라의 순정 · 철검</strong></div><button type="button" class="gear-grant-button" data-grant="1" disabled>장비 받기</button></footer></article></section>
+<section id='accessory-growth' class='gear-detail' hidden><article class='gear-card'><div class='gear-detail-head'><h3>디벨라의 갈망 · 액세서리</h3><span class='equip-state'>미장착</span></div><p class='muted'>디벨라의 갈망</p><div class='gear-stage'><span>현재 단계</span><strong>23 / 40</strong></div><div class='track' role='meter' aria-label='디벨라의 갈망 단계' aria-valuemin='0' aria-valuemax='40' aria-valuenow='23'><span class='fill' style='width:57.5%'></span></div><dl><div><dt>방어력</dt><dd>+17</dd></div><div><dt>최대 매지카·지구력</dt><dd>각 +56</dd></div><div><dt>질병·독 저항</dt><dd>각 +28%p</dd></div><div><dt>마법 저항</dt><dd>+6%p</dd></div><div><dt>화염·냉기·전격 저항</dt><dd>각 +17%p</dd></div><div><dt>주문 흡수</dt><dd>+6%p</dd></div></dl><footer class="gear-grant-bar"><div><small>받을 장비 · 1개</small><strong>디벨라의 갈망 · 은반지</strong></div><button type="button" class="gear-grant-button" data-grant="2" disabled>장비 받기</button></footer></article></section>
+<section id='accessory-decay' class='gear-detail' hidden><article class='gear-card decay'><div class='gear-detail-head'><h3>디벨라의 순정 · 액세서리</h3><span class='equip-state equipped'>장착 중</span></div><p class='muted'>디벨라의 순정</p><div class='gear-stage'><span>현재 단계</span><strong>17 / 40</strong></div><div class='track' role='meter' aria-label='디벨라의 순정 단계' aria-valuemin='0' aria-valuemax='40' aria-valuenow='17'><span class='fill' style='width:42.5%'></span></div><dl><div><dt>방어력</dt><dd>+13</dd></div><div><dt>최대 매지카·지구력</dt><dd>각 +44</dd></div><div><dt>질병·독 저항</dt><dd>각 +22%p</dd></div><div><dt>마법 저항</dt><dd>+4%p</dd></div><div><dt>화염·냉기·전격 저항</dt><dd>각 +13%p</dd></div><div><dt>주문 흡수</dt><dd>+4%p</dd></div></dl><footer class="gear-grant-bar"><div><small>받을 장비 · 1개</small><strong>디벨라의 순정 · 은목걸이</strong></div><button type="button" class="gear-grant-button" data-grant="3" disabled>장비 받기</button></footer></article></section></div>
  </div>
  <p class="muted">미장착 유형도 장착 시 효과를 확인할 수 있습니다.</p>
 </section>
@@ -443,9 +472,9 @@ body.hud-layout-active main{visibility:hidden}
   </article>
   <article class="setting-card"><h3><label for="uiTransparency">UI 불투명도</label></h3>
    <p class="muted">100%가 기본이며, 값을 낮추면 화면이 더 투명해집니다.</p>
-   <div class="transparency-control"><input id="uiTransparency" type="range" min="25" max="100" step="5" value="100"><output id="uiTransparencyValue" for="uiTransparency">100%</output></div>
+   <div class="transparency-control"><input id="uiTransparency" type="range" min="25" max="100" step="5" value="100"><output id="uiTransparencyValue" for="uiTransparency">100%</output></div><div class="ui-language"><label for="tdsLanguage">언어</label><select id="tdsLanguage" data-no-i18n><option value="ko">한국어</option><option value="en">English</option></select></div>
   </article>
-  <article class="setting-card">
+  <article class="setting-card" id="hardcoreSettings" hidden inert aria-hidden="true">
    <h3>하드코어 모드</h3>
    <div class="setting-actions"><button id="hardcoreToggle" type="button" aria-pressed="false" aria-controls="hardcoreDetails">하드코어 모드 켜기</button><span id="hardcoreState" class="muted" role="status">꺼짐</span></div>
    <div id="hardcoreDetails" class="locked">
@@ -460,35 +489,32 @@ body.hud-layout-active main{visibility:hidden}
  </div>
 </section>
 <section id="developer" aria-label="개발자" hidden>
- <h2 class="gear-heading">개발자</h2>
+ <h2 class="gear-heading">DEV</h2>
  <article class="setting-card">
   <p class="dev-active">개발자 모드 켜짐</p>
-  <h3>가상 통계 시험</h3>
-  <div class="node-control-actions" id="qaActions" hidden>
-   <button class="effect-button" type="button" id="qaSampleScene">관계 장면 +1</button>
-   <button class="effect-button" type="button" id="qaAdvance">8시간 경과</button>
+  <h3>가상 장면 조합</h3>
+  <div id="qaActions" hidden>
+   <div class="qa-scene-strip">
+    <button class="effect-button" type="button" id="qaSampleScene" aria-disabled="true" title="좌클릭 실행 · 우클릭 설정 비우기">관계 장면 +1</button>
+    <div id="qaSceneChoices" aria-label="이번 장면의 증가분"></div>
+    <button class="effect-button" type="button" id="qaAdvance">8시간 경과</button>
+   </div>
+   <p class="muted" id="qaSceneHint" aria-live="polite"></p>
+   <p class="muted">통계 버튼 좌클릭 +1 · 우클릭 −1 · 장면 버튼 우클릭으로 조합 비우기</p>
   </div>
-  <p class="muted">가상 통계만 조절합니다. 게이지 아래 프리셋이나 숫자 입력으로 값을 지정하고, 입력칸 양옆의 화살표로 1씩 조절합니다.</p>
-<div class="muted">
- <p><strong>게임 구현 요구사항 · 같은 가상 누적 횟수를 두 탭에서 사용합니다.</strong></p>
- <ul>
-  <li>장비 탭 · 누적 횟수 표시, 디벨라의 순정·갈망 장비 단계와 효과 계산</li>
-  <li>성장 노드 탭 · 누적 횟수 표시, 획득 GXP와 사용 가능 GXP 계산, 누적 횟수에 따라 달라지는 성장 규칙 적용</li>
- </ul>
- <p>가상 만족도·타락도와 나머지 가상 통계도 성장 노드 계산과 표시에 반영합니다.</p>
-</div>
-<nav class="mock-tabs" aria-label="가상 통계 분류"><button type='button' data-stat-tab='summary' aria-controls='mock-panel-summary' aria-pressed='true'>기본 통계</button><button type='button' data-stat-tab='partners' aria-controls='mock-panel-partners' aria-pressed='false'>관계 대상</button><button type='button' data-stat-tab='acts' aria-controls='mock-panel-acts' aria-pressed='false'>관계 유형</button><button type='button' data-stat-tab='coercion' aria-controls='mock-panel-coercion' aria-pressed='false'>강압</button></nav>
+<nav class="mock-tabs" aria-label="가상 통계 분류"><button type='button' data-stat-tab='summary' aria-controls='mock-panel-summary' aria-pressed='true'>기본 통계</button><button type='button' data-stat-tab='counts' aria-controls='mock-panel-counts' aria-pressed='false'>횟수</button><button type='button' data-stat-tab='partners' aria-controls='mock-panel-partners' aria-pressed='false'>관계 대상</button><button type='button' data-stat-tab='acts' aria-controls='mock-panel-acts' aria-pressed='false'>관계 유형</button><button type='button' data-stat-tab='coercion' aria-controls='mock-panel-coercion' aria-pressed='false'>강압</button></nav>
 <div class='mock-panels'><section id='mock-panel-summary' class='mock-panel' aria-label='기본 통계'><div class='mock-stats'><div class="mock-stat" data-mock-stat="X" data-scale="100">
  <div class="mock-stat-head"><label for="mock-X">만족도 <small>X</small></label><div class="mock-step"><button type="button" data-step="-1" aria-label="1 감소">◀</button><input id="mock-X" type="number" min="-100" max="100" step="1" value="0"><button type="button" data-step="1" aria-label="1 증가">▶</button></div></div>
  <div class="track"><span class="fill"></span><span class="center"></span><input class="mock-slider" type="range" aria-label="만족도" min="-100" max="100" step="1" value="0"></div>
  <div class="mock-presets" role="group" aria-label="만족도 프리셋"><button type='button' data-value='-100' aria-pressed='false'>-100</button><button type='button' data-value='-50' aria-pressed='false'>-50</button><button type='button' data-value='-25' aria-pressed='false'>-25</button><button type='button' data-value='0' aria-pressed='true'>0</button><button type='button' data-value='25' aria-pressed='false'>25</button><button type='button' data-value='50' aria-pressed='false'>50</button><button type='button' data-value='100' aria-pressed='false'>100</button></div>
 </div>
-<div class="mock-stat" data-mock-stat="K" data-scale="3000">
+<div class="mock-stat" data-mock-stat="K" data-scale="45000">
  <div class="mock-stat-head"><label for="mock-K">타락도 <small>K</small></label><div class="mock-step"><button type="button" data-step="-1" aria-label="1 감소">◀</button><input id="mock-K" type="number" min="0" max="2147483647" step="1" value="0"><button type="button" data-step="1" aria-label="1 증가">▶</button></div></div>
- <div class="track"><span class="fill"></span><input class="mock-slider" type="range" aria-label="타락도" min="0" max="3000" step="1" value="0"></div>
- <div class="mock-presets" role="group" aria-label="타락도 프리셋"><button type='button' data-value='0' aria-pressed='true'>0</button><button type='button' data-value='100' aria-pressed='false'>100</button><button type='button' data-value='250' aria-pressed='false'>250</button><button type='button' data-value='500' aria-pressed='false'>500</button><button type='button' data-value='900' aria-pressed='false'>900</button><button type='button' data-value='1400' aria-pressed='false'>1400</button><button type='button' data-value='2000' aria-pressed='false'>2000</button><button type='button' data-value='3000' aria-pressed='false'>3000</button></div>
+ <div class="track"><span class="fill"></span><input class="mock-slider" type="range" aria-label="타락도" min="0" max="45000" step="1" value="0"></div>
+ <div class="mock-presets" role="group" aria-label="타락도 프리셋"><button type='button' data-value='0' aria-pressed='true'>0</button><button type='button' data-value='500' aria-pressed='false'>500</button><button type='button' data-value='1500' aria-pressed='false'>1500</button><button type='button' data-value='4000' aria-pressed='false'>4000</button><button type='button' data-value='8000' aria-pressed='false'>8000</button><button type='button' data-value='13500' aria-pressed='false'>13500</button><button type='button' data-value='21000' aria-pressed='false'>21000</button><button type='button' data-value='30000' aria-pressed='false'>30000</button><button type='button' data-value='45000' aria-pressed='false'>45000</button></div>
 </div>
-<div class="mock-stat" data-mock-stat="N" data-scale="500">
+</div></section>
+<section id="mock-panel-counts" class="mock-panel" aria-label="횟수" hidden><div class="mock-reset-actions"><button id="resetQaStatistics" type="button" disabled>가상통계 초기화</button></div><div class="mock-stats"><div class="mock-stat" data-mock-stat="N" data-scale="500">
  <div class="mock-stat-head"><label for="mock-N">누적 횟수 <small>N</small></label><div class="mock-step"><button type="button" data-step="-1" aria-label="1 감소">◀</button><input id="mock-N" type="number" min="0" max="2147483647" step="1" value="0"><button type="button" data-step="1" aria-label="1 증가">▶</button></div></div>
  <div class="track"><span class="fill"></span><input class="mock-slider" type="range" aria-label="누적 관계" min="0" max="500" step="1" value="0"></div>
  <div class="mock-presets" role="group" aria-label="누적 관계 프리셋"><button type='button' data-value='0' aria-pressed='true'>0</button><button type='button' data-value='1' aria-pressed='false'>1</button><button type='button' data-value='12' aria-pressed='false'>12</button><button type='button' data-value='50' aria-pressed='false'>50</button><button type='button' data-value='100' aria-pressed='false'>100</button><button type='button' data-value='200' aria-pressed='false'>200</button><button type='button' data-value='500' aria-pressed='false'>500</button></div>
@@ -554,12 +580,30 @@ body.hud-layout-active main{visibility:hidden}
  <p>SexLab 원본 통계와 기존 무기·액세서리 단계는 유지됩니다.</p>
  <form method="dialog"><button value="cancel" autofocus>취소</button> <button id="confirmNodeReset" value="reset">전체 초기화</button></form>
 </dialog>
+<dialog id="resetQaStatisticsDialog" class="effect-dialog" aria-labelledby="resetQaStatisticsTitle">
+ <h2 id="resetQaStatisticsTitle">가상통계를 초기화할까요?</h2>
+ <p>가상 횟수·만족도·타락도·노드 투자를 모두 초기화합니다. 실제 SexLab 통계는 변경하지 않습니다.</p>
+ <div class="compact-dialog-actions"><button type="button" id="cancelQaStatisticsReset">취소</button><button type="button" id="confirmQaStatisticsReset">초기화</button></div>
+</dialog>
+<dialog id="developerPasswordDialog" class="effect-dialog" aria-labelledby="developerPasswordTitle">
+ <form id="developerPasswordForm"><h2 id="developerPasswordTitle">개발자 모드</h2>
+ <ul class="developer-warnings">
+  <li>테스트 세션 전용 기능입니다.</li>
+  <li class="developer-no-return">진입 후 이 세션에서 개발자 모드를 끄거나 일반 모드로 돌아가는 기능은 없습니다.</li>
+  <li>TDS는 실제 SexLab 통계를 읽거나 정산하지 않고, 가상 통계만 사용합니다.</li>
+  <li><strong>활성화 후 게임을 저장하지 마세요.</strong> 시험을 마치면 저장 없이 콘솔 <kbd>qqq</kbd>로 종료하세요.</li>
+ </ul>
+ <div class="consent-input"><span id="developerConsentHint" class="consent-hint" aria-hidden="true">TULL</span><input id="developerPassword" type="text" aria-label="TULL 입력" placeholder=" " autocomplete="off" spellcheck="false" maxlength="16"></div>
+ <p id="developerPasswordError" role="status"></p>
+ <div class="compact-dialog-actions"><button type="button" id="developerPasswordCancel">취소</button><button type="submit">확인 후 진입</button></div></form>
+</dialog>
 <dialog id="sceneStats" class="effect-dialog" aria-labelledby="sceneStatsTitle">
  <h2 id="sceneStatsTitle">통계와 획득량</h2>
+ <p id="scenePurityState" class="muted"></p>
  <p class="muted">현재 조건에서 해당 횟수만 1 증가할 때의 보정값입니다. 여러 항목이 늘어나는 장면에서는 함께 계산합니다.</p>
  <table class="scene-values"><thead><tr><th scope="col">통계</th><th scope="col">횟수</th><th scope="col">만족도</th><th scope="col">타락도</th></tr></thead><tbody id="sceneWeightRows"></tbody></table>
  <h3>최근 만족도 변화 획득</h3>
- <table class="scene-values"><thead><tr><th scope="col">순서</th><th scope="col">만족도</th><th scope="col">타락도</th></tr></thead><tbody id="sceneRecentRows"></tbody></table>
+ <table class="scene-values"><thead><tr><th scope="col">순서</th><th scope="col">계산 만족도</th><th scope="col">획득 블록</th><th scope="col">실효 변화</th><th scope="col">획득 타락도</th></tr></thead><tbody id="sceneRecentRows"></tbody></table>
  <form method="dialog"><button class="effect-button">닫기</button></form>
 </dialog>
 <dialog id="hudSettings" aria-labelledby="hudSettingsTitle">
@@ -583,7 +627,7 @@ body.hud-layout-active main{visibility:hidden}
   <section>
    <h3 class="effect-positive">긍정적 효과</h3>
    <ul>
-    <li>무기 고정 피해 <strong class="effect-positive">+14</strong></li>
+    <li>근접무기 추가 고정 피해 <strong class="effect-positive">+14</strong></li>
     <li>방어력 <strong class="effect-positive">+120</strong></li>
     <li>화염·냉기·전격·질병·독 저항 <strong class="effect-positive">각 +10%p</strong></li>
     <li>마법 저항 <strong class="effect-positive">+5%p</strong></li>
@@ -603,7 +647,7 @@ body.hud-layout-active main{visibility:hidden}
  <section class="effect-total" aria-label="전체 노드 효과 합계">
   <h3>전체 노드 효과 합계</h3>
   <ul>
-   <li>무기 고정 피해 <strong class="effect-positive">+8</strong></li>
+   <li>근접무기 추가 고정 피해 <strong class="effect-positive">+8</strong></li>
    <li>방어력 <strong class="effect-positive">+80</strong></li>
    <li>화염·냉기·전격·질병·독 저항 <strong class="effect-positive">각 +10%p</strong></li>
    <li>마법 저항 <strong class="effect-positive">+5%p</strong></li>
@@ -626,21 +670,32 @@ body.hud-layout-active main{visibility:hidden}
 </dialog>
 <div id="tip" role="tooltip" hidden><strong></strong><p id="tipEffect"></p><p id="tipRule" class="muted"></p></div>
 <script>
+let lastAppliedSnapshotRevision=-1;
+let snapshotRefreshQueued=false;
+function requestNativeSnapshot(){
+ if(typeof tdsCommand!=="function"||snapshotRefreshQueued) return;
+ snapshotRefreshQueued=true;
+ setTimeout(()=>{snapshotRefreshQueued=false;sendNodeCommand("snapshot");},0);
+}
+window.tdsMenuShown=function(){requestNativeSnapshot();};
+window.addEventListener("focus",requestNativeSnapshot);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden) requestNativeSnapshot();});
+
 const branches = [
  ["신체","#8fe1bb",[
-  ["회복","I",1,"신체 회복 I","기본 체력·매지카·지구력 {bad:−90%} → {bad:−60%}","","구매 완료"],
-  ["회복","II",2,"신체 회복 II","기본 체력·매지카·지구력 {bad:−60%} → {bad:−30%}","신체 회복 I 선행","구매 완료",true],
-  ["회복","III",3,"신체 회복 III","기본 체력·매지카·지구력 {bad:−30%} → {good:감소 없음 (0%)}","신체 회복 II 선행","구매 완료",true]
+  ["회복","I",2,"신체 회복 I","기본 체력·매지카·지구력 {bad:−90%} → {bad:−60%}. {good:디벨라의 봉헌} 습득: 양수 만족도를 모두 제거하고 절반을 타락도로 전환합니다. 소수점 이하는 버립니다. 만족도가 0 이하이면 전환하지 않습니다","","구매 완료"],
+  ["회복","II",2,"신체 회복 II","기본 체력·매지카·지구력 {bad:−60%} → {bad:−30%}. 디벨라의 봉헌 사용 시 제거 전 양수 만족도만큼 {good:골드 획득}","신체 회복 I 선행","구매 완료",true],
+  ["회복","III",3,"신체 회복 III","기본 체력·매지카·지구력 {bad:−30%} → {good:감소 없음 (0%)}. 디벨라의 봉헌으로 얻는 {good:골드 2배}","신체 회복 II 선행","구매 완료",true]
  ]],
  ["역전","#f4bd75",[
-  ["항문","I",2,"항문 역전 I","항문 관계 1회당 만족도 {bad:−7} → {good:+1}"],
-  ["항문","II",5,"항문 역전 II","항문 관계 1회당 만족도 {good:+1} → {good:+7}","항문 역전 I 필요","잠금",true],
-  ["크리처","I",2,"크리처 역전 I","크리처와 1회 관계 시 만족도 {bad:−11} → {good:+1}"],
-  ["크리처","II",7,"크리처 역전 II","크리처와 1회 관계 시 만족도 {good:+1} → {good:+11}","크리처 역전 I 필요","잠금",true]
+  ["항문","I",2,"항문 역전 I","항문 관계 1회당 만족도 {bad:−7} → {good:+1} · 타락도 {bad:+1} 추가"],
+  ["항문","II",5,"항문 역전 II","항문 관계 1회당 만족도 {good:+1} → {good:+7} · 타락도 {bad:+2} 추가","항문 역전 I 필요","잠금",true],
+  ["크리처","I",2,"크리처 역전 I","크리처와 1회 관계 시 만족도 {bad:−11} → {good:+1} · 타락도 {bad:+2} 추가"],
+  ["크리처","II",7,"크리처 역전 II","크리처와 1회 관계 시 만족도 {good:+1} → {good:+11} · 타락도 {bad:+4} 추가","크리처 역전 I 필요","잠금",true]
  ]],
  ["역전","#f4bd75",[
-  ["피해","I",3,"피해 역전 I","강압적인 관계를 1회 당할 때 만족도 {bad:−15} → {good:+1}","","구매 완료"],
-  ["피해","II",8,"피해 역전 II","강압적인 관계를 1회 당할 때 만족도 {good:+1} → {good:+15}","피해 역전 I 필요","잠금",true]
+  ["피해","I",3,"피해 역전 I","강압적인 관계를 1회 당할 때 만족도 {bad:−15} → {good:+1} · 타락도 {bad:+3} 추가","","구매 완료"],
+  ["피해","II",8,"피해 역전 II","강압적인 관계를 1회 당할 때 만족도 {good:+1} → {good:+15} · 타락도 {bad:+6} 추가","피해 역전 I 필요","잠금",true]
  ]],
  ["내성","#91c9ff",[
   ["타락","","8","타락 내성","{good:타락으로 받는 불이익 75% 감소}","침식과 함께 선택할 수 없음"],
@@ -655,16 +710,16 @@ const branches = [
  ]],
  ["성향","#f4a3b5",[
   ["자족","","5","자족","혼자 즐길 때마다 만족도 {good:+3} 추가 · 상대와 관계할 때마다 만족도 {bad:−2} 보정.","교감과 함께 선택할 수 없음"],
-  ["교감","","5","교감","상대와 관계할 때마다 만족도 {good:+3} 추가 · 혼자 즐길 때마다 만족도 {bad:−2} 보정.","자족과 함께 선택할 수 없음"],
+  ["교감","","5","교감","상대와 관계할 때마다 만족도 {good:+3} 추가 · 혼자 즐길 때마다 만족도 {bad:−2} 보정. 관계 횟수당 타락도 {good:−1}, 자위 횟수당 타락도 {bad:+1}.","자족과 함께 선택할 수 없음"],
   ["주도","","5","주도","강압적인 관계를 주도할 때마다 만족도 {good:+4} 추가 · 강압적인 관계를 당할 때마다 만족도 {bad:−4} 보정."]
  ]],
  ["발현 · 변이","#e4df98",[
-  ["투쟁","","8","투쟁 발현","이 노드를 켜 두면 무기 고정 피해 {good:+6}","","구매 완료"],
+  ["투쟁","","8","투쟁 발현","이 노드를 켜 두면 근접무기 추가 고정 피해 {good:+6}","","구매 완료"],
   ["수호","","7","수호 발현","이 노드를 켜 두면 방어력 {good:+40}","","구매 완료"],
   ["저항","","8","저항 발현","이 노드를 켜 두면 화염·냉기·전격·질병·독 저항 {good:+10%p}, 마법 저항 {good:+5%p}","","구매 완료"],
   ["침식","","11","침식","타락도 획득 1.6배 · {bad:타락으로 받는 불이익 2배} · 통계가 늘어난 장면마다 만족도 {bad:−3} (장면당 1회)","타락 내성과 함께 선택할 수 없음"],
-  ["포식","","9","포식","무기 고정 피해 {good:+8} · 피해를 준 무기 공격마다 {good:체력 3 흡수} (공격당 1회) · 방어력 {bad:−40}","","구매 완료"],
-  ["갑각","","9","갑각","이 노드를 켜 두면 방어력 {good:+80} · 무기 고정 피해 {bad:−6}","","구매 완료"]
+  ["포식","","9","포식","근접무기 추가 고정 피해 {good:+8} · 피해를 준 무기 공격마다 {good:체력 3 흡수} (공격당 1회) · 방어력 {bad:−40}","","구매 완료"],
+  ["갑각","","9","갑각","이 노드를 켜 두면 방어력 {good:+80} · 근접무기 추가 고정 피해 {bad:−6}","","구매 완료"]
  ]]
 ];
 const board = document.querySelector("#board");
@@ -745,10 +800,10 @@ window.addEventListener("resize",renderTip);
 window.addEventListener("scroll",renderTip,{passive:true});
 document.getElementById("pageViewport").addEventListener("scroll",renderTip,{passive:true});
 const tiers = [
- [0,"고결함","#b9e6f1"],[100,"흔들리는 순수","#a8d9ee"],
- [250,"유혹의 기척","#abbee9"],[500,"욕망의 자각","#b4abe8"],
- [900,"방종","#cb9ad6"],[1400,"음탕함","#d183bf"],
- [2000,"깊은 타락","#d263ad"],[3000,"타락의 화신","#dc57b0"]
+ [0,"고결함","#b9e6f1"],[500,"싹트는 호기심","#a8d9ee"],[1500,"흔들리는 순수","#a8d9ee"],
+ [4000,"유혹의 기척","#abbee9"],[8000,"욕망의 자각","#b4abe8"],
+ [13500,"방종","#cb9ad6"],[21000,"음탕함","#d183bf"],
+ [30000,"깊은 타락","#d263ad"],[45000,"타락의 화신","#dc57b0"]
 ];
 const xInput = document.querySelector("#xInput"), kInput = document.querySelector("#kInput");
 function updateGauges(){
@@ -771,9 +826,9 @@ function updateGauges(){
  kStage.style.color = kColor;
  document.querySelector("#kValue").textContent = k.toLocaleString("ko-KR");
  const meter = document.querySelector("#kMeter");
- meter.setAttribute("aria-valuenow",Math.min(k,3000));
+ meter.setAttribute("aria-valuenow",Math.min(k,45000));
  meter.setAttribute("aria-valuetext",name+" "+k);
- kFill.style.width = Math.min(100,k/30)+"%";
+ kFill.style.width = Math.min(100,k/450)+"%";
  kFill.style.background = kColor;
  meter.style.background = darkerStageColor(kColor);
 }
@@ -794,7 +849,7 @@ function showPage(){
   else tab.removeAttribute("aria-current");
  }
 }
-window.addEventListener("hashchange",showPage);
+window.addEventListener("hashchange",()=>{showPage();requestNativeSnapshot();});
 showPage();
 const gearButtons = document.querySelectorAll("[data-gear]");
 for (const button of gearButtons){
@@ -810,14 +865,25 @@ const enableDeveloper = document.getElementById("enableDeveloper");
 const changeShortcut = document.getElementById("changeShortcut");
 const shortcutStatus = document.getElementById("shortcutStatus");
 let developerRequested=false;
+const developerPasswordDialog=document.getElementById("developerPasswordDialog");
+const developerPassword=document.getElementById("developerPassword");
+const developerPasswordError=document.getElementById("developerPasswordError");
+developerPassword.addEventListener("input",()=>{document.getElementById("developerConsentHint").hidden=Boolean(developerPassword.value);});
 enableDeveloper.addEventListener("click",()=>{
- if(typeof tdsCommand==="function"){
-  developerRequested=true;
-  sendNodeCommand("qa-enter");
-  return;
- }
- openDeveloperTab();
+ developerPassword.value="";developerPasswordError.textContent="";document.getElementById("developerConsentHint").hidden=false;
+ developerPasswordDialog.showModal();developerPassword.focus();
 });
+document.getElementById("developerPasswordForm").addEventListener("submit",event=>{
+ event.preventDefault();
+ if(developerPassword.value.toLowerCase()!=="tull"){
+  developerPasswordError.textContent="입력값을 다시 확인하세요.";developerPassword.select();return;
+ }
+ const password=developerPassword.value;developerPassword.value="";developerPasswordDialog.close();
+ if(typeof tdsCommand==="function"){developerRequested=true;sendNodeCommand("qa-enter:"+password);}
+ else openDeveloperTab();
+});
+document.getElementById("developerPasswordCancel").addEventListener("click",()=>developerPasswordDialog.close());
+developerPasswordDialog.addEventListener("close",()=>{developerPassword.value="";developerPasswordError.textContent="";});
 function openDeveloperTab(navigate=true){
  document.getElementById("developerTab").hidden = false;
  enableDeveloper.setAttribute("aria-expanded","true");
@@ -885,6 +951,14 @@ function showHardcore(enabled){
 const qaCounterKeys=["N","M","F","C","S","A","V","VG","AN","OR"];
 const qaDisplay=new Map();
 let qaActive=false;
+const resetQaStatisticsDialog=document.getElementById("resetQaStatisticsDialog");
+document.getElementById("resetQaStatistics").addEventListener("click",()=>{if(qaActive) resetQaStatisticsDialog.showModal();});
+document.getElementById("cancelQaStatisticsReset").addEventListener("click",()=>resetQaStatisticsDialog.close());
+document.getElementById("confirmQaStatisticsReset").addEventListener("click",()=>{
+ if(qaActive) sendNodeCommand("qa:R:0");
+ resetQaStatisticsDialog.close();
+});
+
 for(const row of document.querySelectorAll("[data-mock-stat]")){
  const field = row.querySelector('input[type="number"]');
  const slider = row.querySelector(".mock-slider");
@@ -949,18 +1023,18 @@ document.getElementById("showNodeEffects").addEventListener("click",()=>nodeDial
 const xPositive = [[5,6],[10,12],[15,19],[20,26],[25,33],[30,40],[40,50],[50,60],[60,70],[70,78],[80,85],[90,93],[100,100]];
 const xNegative = [[10,7],[20,15],[30,23],[40,31],[50,40],[60,50],[70,60],[75,67],[80,74],[85,81],[90,87],[95,94],[100,100]];
 const combatEffects = [
- ["무기 고정 피해",""],["방어력",""],["화염·냉기·전격 저항 각각","%p"],["마법 저항","%p"],
+ ["근접무기 추가 고정 피해",""],["방어력",""],["화염·냉기·전격 저항 각각","%p"],["마법 저항","%p"],
  ["질병·독 저항 각각","%p"],["주문 매지카 소비","%"],["최대 체력·매지카·지구력 각각",""],
  ["체력·매지카·지구력 재생률 각각","%"],["받는 피해","%"],["한손·양손·궁술·방어·중갑·경갑·회복·파괴 유효 숙련도 각각",""]
 ];
 const karmaTierChanges = [
- [100,[[6,10],[1,-10]]],
- [250,[[1,20],[4,-5]]],
- [500,[[0,3],[1,-15]]],
- [900,[[2,5],[8,3],[5,5]]],
- [1400,[[6,20],[7,10],[1,-20],[3,-5],[5,5]]],
- [2000,[[1,30],[3,5],[4,10],[8,5],[2,-5],[5,5]]],
- [3000,[[6,30],[0,5],[9,10],[1,-40],[8,7],[2,-5],[5,5]]]
+ [1500,[[6,10],[1,-10]]],
+ [4000,[[1,20],[4,-5]]],
+ [8000,[[0,3],[1,-15]]],
+ [13500,[[2,5],[8,3],[5,5]]],
+ [21000,[[6,20],[7,10],[1,-20],[3,-5],[5,5]]],
+ [30000,[[1,30],[3,5],[4,10],[8,5],[2,-5],[5,5]]],
+ [45000,[[6,30],[0,5],[9,10],[1,-40],[8,7],[2,-5],[5,5]]]
 ];
 function satisfactionEffects(value){
  const steps=value<0?xNegative:xPositive;
@@ -989,7 +1063,7 @@ function showMeterEffects(title,state,note,values){
   const item=document.createElement("li");
   const amount=document.createElement("strong");
   amount.className=harmful?"effect-negative":"effect-positive";
-  amount.textContent=(value>0?"+":"−")+Math.abs(value).toLocaleString("ko-KR",{maximumFractionDigits:2})+unit;
+  amount.textContent=(value>0?"+":"−")+Math.abs(value).toLocaleString("ko-KR",{maximumFractionDigits:1})+unit;
   item.append(document.createTextNode(name+" "),amount);
   lists[harmful?1:0].append(item);
  });
@@ -1065,7 +1139,7 @@ function updateOverview(){
  const maximumKarma = noRecovery || overviewExample.value === "max-karma";
  const n=overviewNative ? overviewNative.n : maximumKarma ? 200 : Number(overviewExample.value);
  const solo=overviewNative ? overviewNative.solo : 12;
- const x=Number(xInput.value), k=!overviewNative && maximumKarma ? 3000 : Number(kInput.value);
+ const x=Number(xInput.value), k=!overviewNative && maximumKarma ? 45000 : Number(kInput.value);
  const countText=value=>Number.isInteger(value)?value.toLocaleString("ko-KR"):"—";
  document.getElementById("overviewSolo").textContent=countText(solo);
  const [,name,kColor]=tiers.filter(([threshold])=>k>=threshold).pop();
@@ -1087,10 +1161,10 @@ function updateOverview(){
  xFill.style.background=satisfaction.style.color;
  const kTrack=document.getElementById("overviewKTrack");
  const kFill=kTrack.querySelector(".fill");
- kTrack.setAttribute("aria-valuenow",String(Math.min(k,3000)));
+ kTrack.setAttribute("aria-valuenow",String(Math.min(k,45000)));
  kTrack.setAttribute("aria-valuetext",name+" "+k.toLocaleString("ko-KR"));
  kTrack.style.background=darkerStageColor(kColor);
- kFill.style.width=Math.min(100,k/30)+"%";
+ kFill.style.width=Math.min(100,k/450)+"%";
  kFill.style.background=kColor;
  const banner=document.getElementById("karmaBanner");
  banner.hidden=!Number.isInteger(n)||n===0;
@@ -1102,7 +1176,7 @@ overviewExample.addEventListener("change",updateOverview);
 xInput.addEventListener("input",updateOverview);
 kInput.addEventListener("input",updateOverview);
 updateOverview();
-const nodeContent=document.getElementById("nodePageContent");
+const nodeContent=document.getElementById("board");
 const nodeLock=document.getElementById("nodeLock");
 const disableNodeSystem=document.getElementById("disableNodeSystem");
 const enableNodeSystem=document.getElementById("enableNodeSystem");
@@ -1162,10 +1236,121 @@ document.getElementById("confirmNodeReset").addEventListener("click",()=>{
  updateGauges();
  updateOverview();
 });
-document.getElementById("qaSampleScene").addEventListener("click",()=>sendNodeCommand("qa:S:1,1,0,0,0,0,0,1,0,0"));
+const qaSceneKeys=["N","S","M","F","C","A","V","VG","AN","OR"];
+const qaSceneWireKeys=["N","M","F","C","S","A","V","VG","AN","OR"];
+const qaScenePartners=["M","F","C","A","V"];
+const qaSceneSingle=new Set(["N","S","A","V"]);
+const qaSceneLabels={N:"누적",S:"자위",M:"남성",F:"여성",C:"크리처",A:"강압 주도",V:"강압당함",VG:"질",AN:"항문",OR:"구강"};
+const qaSceneDraft=Object.fromEntries(qaSceneKeys.map(key=>[key,0]));
+const qaSceneButtons={};
+const qaSceneApply=document.getElementById("qaSampleScene");
+function qaSceneLocked(key){
+ if(key==="N") return qaSceneDraft.S>0;
+ if(key==="S") return qaSceneDraft.N>0;
+ return qaScenePartners.includes(key) && (!qaSceneDraft.N ||
+  (key==="A" && qaSceneDraft.V>0) || (key==="V" && qaSceneDraft.A>0));
+}
+function qaSceneMissing(){
+ const missing=[];
+ if(!qaSceneDraft.N&&!qaSceneDraft.S) missing.push("누적 또는 자위");
+ if(qaSceneDraft.N&&!(qaSceneDraft.M||qaSceneDraft.F||qaSceneDraft.C)) missing.push("관계 대상");
+ if(!(qaSceneDraft.VG||qaSceneDraft.AN||qaSceneDraft.OR)) missing.push("체위");
+ return missing;
+}
+function renderQaScene(){
+ for(const key of qaSceneKeys){
+  const button=qaSceneButtons[key];
+  button.disabled=qaSceneLocked(key);
+  button.querySelector("strong").textContent=qaSceneDraft[key];
+  button.setAttribute("aria-pressed",String(qaSceneDraft[key]>0));
+  button.setAttribute("aria-label",qaSceneLabels[key]+" 증가분 "+qaSceneDraft[key]);
+ }
+ const missing=qaSceneMissing();
+ qaSceneApply.setAttribute("aria-disabled",String(missing.length>0));
+ document.getElementById("qaSceneHint").textContent=missing.length
+  ? "필요 · "+missing.join(" / ")
+  : qaSceneKeys.filter(key=>qaSceneDraft[key]).map(key=>qaSceneLabels[key]+" +"+qaSceneDraft[key]).join(" · ")+" / 실행 후 설정 유지";
+}
+function changeQaScene(key,step){
+ if(qaSceneLocked(key)) return;
+ qaSceneDraft[key]=Math.max(0,Math.min(qaSceneSingle.has(key)?1:2147483647,qaSceneDraft[key]+step));
+ if(key==="N"&&!qaSceneDraft.N) for(const partner of qaScenePartners) qaSceneDraft[partner]=0;
+ renderQaScene();
+}
+let qaRightTarget=null;
+let qaRightTime=-Infinity;
+function qaRunRight(){
+ if(!qaRightTarget) return;
+ const now=performance.now();
+ if(now-qaRightTime<100) return;
+ qaRightTime=now;
+ qaRightTarget();
+}
+function bindQaRight(button,action){
+ let usedDown=false;
+ button.addEventListener("mouseenter",()=>{qaRightTarget=action;});
+ button.addEventListener("mouseleave",()=>{if(qaRightTarget===action) qaRightTarget=null;});
+ button.addEventListener("mousedown",event=>{
+  if(event.button!==2) return;
+  event.preventDefault();usedDown=true;
+  qaRightTarget=action;qaRunRight();
+ });
+ button.addEventListener("contextmenu",event=>{
+  event.preventDefault();
+  if(!usedDown){qaRightTarget=action;qaRunRight();}
+  usedDown=false;
+ });
+}
+window.tdsQaRightClick=()=>qaRunRight();
+for(const key of qaSceneKeys){
+ const button=document.createElement("button");
+ button.type="button";button.className="effect-button qa-scene-choice";
+ button.title=qaSceneLabels[key];button.innerHTML="<span>"+key+"</span><strong>0</strong>";
+ button.addEventListener("click",()=>changeQaScene(key,1));
+ bindQaRight(button,()=>changeQaScene(key,-1));
+ button.addEventListener("keydown",event=>{if(event.key==="ArrowDown"){event.preventDefault();changeQaScene(key,-1);}});
+ qaSceneButtons[key]=button;
+ document.getElementById("qaSceneChoices").append(button);
+}
+qaSceneApply.addEventListener("click",()=>{
+ if(!qaSceneMissing().length) sendNodeCommand("qa:S:"+qaSceneWireKeys.map(key=>qaSceneDraft[key]).join(","));
+});
+bindQaRight(qaSceneApply,()=>{
+ for(const key of qaSceneKeys) qaSceneDraft[key]=0;
+ renderQaScene();
+});
+renderQaScene();
 document.getElementById("qaAdvance").addEventListener("click",()=>sendNodeCommand("qa:H:8"));
 const gearIds=["weapon-growth","weapon-decay","accessory-growth","accessory-decay"];
+const grantButtons=[...document.querySelectorAll('[data-grant]')];
+const grantDialog=document.getElementById('gearGrantDialog');
+const grantNames=["디벨라의 갈망 · 철검","디벨라의 순정 · 철검","디벨라의 갈망 · 은반지","디벨라의 순정 · 은목걸이"];
+let grantPending=null,grantClaims=[true,true,true,true],grantReady=false,grantSession=null,lastGrantNotice=0,grantToastTimer;
+for(const button of grantButtons) button.addEventListener('click',()=>{
+ const group=Number(button.dataset.grant);
+ if(!grantReady || grantClaims[group] || button.disabled)return;
+ grantPending={group,session:grantSession};document.getElementById('gearGrantItem').textContent=grantNames[group]+' × 1';grantDialog.showModal();
+});
+document.getElementById('gearGrantCancel').addEventListener('click',()=>grantDialog.close());
+grantDialog.addEventListener('close',()=>grantPending=null);
+document.getElementById('gearGrantConfirm').addEventListener('click',()=>{
+ const pending=grantPending;
+ if(!pending || pending.session!==grantSession || !grantReady || grantClaims[pending.group]){grantDialog.close();return;}
+ grantPending=null;grantButtons.forEach(b=>b.disabled=true);grantDialog.close();sendNodeCommand('gear-grant:'+pending.group);
+});
+function renderEquipmentClaims(snapshot){
+ if(grantSession!==snapshot.gearGrantSession){grantSession=snapshot.gearGrantSession;grantPending=null;grantDialog.close();lastGrantNotice=0;}
+ grantReady=snapshot.gearGrantReady===true && Array.isArray(snapshot.gearClaims) && snapshot.gearClaims.length===4;
+ grantClaims=grantReady?snapshot.gearClaims.map(v=>v===true):[true,true,true,true];
+ for(const b of grantButtons){const claimed=grantClaims[Number(b.dataset.grant)];b.disabled=!grantReady||claimed;b.textContent=!grantReady?'연결 대기':claimed?'수령 완료':'장비 받기';}
+ if(snapshot.gearGrantSerial!==lastGrantNotice){lastGrantNotice=snapshot.gearGrantSerial;
+  const messages=['','장비 1개를 받았습니다.','이미 받은 장비입니다.','지금은 장비를 받을 수 없습니다.','장비 정보를 확인하지 못했습니다.','지급 결과를 확인할 수 없습니다.'];
+  const message=messages[snapshot.gearGrantResult];if(message){const toast=document.getElementById('grantToast');toast.textContent=message;toast.hidden=false;clearTimeout(grantToastTimer);grantToastTimer=setTimeout(()=>toast.hidden=true,4000);}
+ }
+}
+
 function renderGearSnapshot(snapshot){
+ renderEquipmentClaims(snapshot);
  if(!Array.isArray(snapshot.gearPreview)) return;
  const n=snapshot.stats?.[0];
  document.querySelector(".gear-count strong").firstChild.nodeValue=(Number.isInteger(n)?n:"—")+" ";
@@ -1174,8 +1359,8 @@ function renderGearSnapshot(snapshot){
   const card=document.getElementById(id);
   const v=snapshot.gearPreview[i];
   const group=snapshot.groups?.[i];
-  card.querySelector(".equip-state").textContent=!group?.equipped ? "미장착" :
-   group.liveStage ? "장착 중 · 적용 "+group.liveStage+"단계" : "장착 중 · 효과 확인 필요";
+  card.querySelector(".equip-state").textContent=!group?.equipped ? (group?.liveStage ? "미장착 · 효과 회수 대기" : "미장착") :
+   group.applied ? "장착 중 · 적용 "+group.liveStage+"단계" : "장착 중 · 적용 대기";
   const heading=card.querySelector(".gear-stage span");
   if(heading) heading.textContent=snapshot.qa?"가상 통계 기준 단계":"현재 단계";
   card.querySelector(".equip-state").classList.toggle("equipped",Boolean(snapshot.groups?.[i]?.equipped));
@@ -1215,22 +1400,28 @@ const growthLabels={
  155:"체력 재생률",156:"매지카 재생률",157:"지구력 재생률"
 };
 const groupedEffects=[
- [[24,25,26],"최대 체력·매지카·지구력",""],
+ [[24,25,26],"최대 스탯",""],
  [[6,7,8,9,11,12,22,20],"지정 스킬",""],
- [[155,156,157],"체력·매지카·지구력 재생률","%"],
- [[41,43,42,45,40],"화염·냉기·전격·질병·독 저항","%p"]
+ [[155,156,157],"스탯 재생률","%"],
+ [[41,43,42],"속성 저항","%p"],
+ [[45,40],"질병·독 저항","%p"]
 ];
+function effectDecimal(value){
+ return Math.trunc((value+Math.sign(value)*1e-9)*10)/10;
+}
 function fillNativeEffects(values,positive,negative){
  positive.replaceChildren();
  if(negative) negative.replaceChildren();
  const left=new Map(values||[]);
  const add=(name,value,unit,ids=[])=>{
+  value=effectDecimal(value);
+  if(!value) return;
   const list=value>0?positive:negative;
   if(!list) return;
   const item=document.createElement("li"), amount=document.createElement("strong");
   amount.className=value>0?"effect-positive":"effect-negative";
-  amount.textContent=(ids.length?"각 ":"")+(value>0?"+":"−")+Math.abs(value)+unit;
-  if(name==="지정 스킬"){
+  amount.textContent=(ids.length?"각 ":"")+(value>0?"+":"−")+Math.abs(value).toLocaleString("ko-KR",{maximumFractionDigits:1})+unit;
+  if(ids.length){
    const hint=document.createElement("span"),tooltip=document.createElement("span");
    hint.className="skill-hover";hint.tabIndex=0;hint.textContent=name;
    tooltip.className="skill-tooltip";tooltip.setAttribute("role","tooltip");
@@ -1240,21 +1431,34 @@ function fillNativeEffects(values,positive,negative){
   item.append(amount);list.append(item);
  };
  for(const [ids,name,unit] of groupedEffects){
-  const value=left.get(ids[0]);
-  if(value && ids.every(id=>left.get(id)===value)){
-   add(name,value,unit,ids);ids.forEach(id=>left.delete(id));
+  const subsets=new Map();
+  for(const id of ids){
+   const value=left.get(id);
+   if(!value) continue;
+   if(!subsets.has(value)) subsets.set(value,[]);
+   subsets.get(value).push(id);
+  }
+  for(const [value,members] of subsets){
+   add(name,value,unit,members);
+   members.forEach(id=>left.delete(id));
   }
  }
  for(const [av,value] of left) if(growthLabels[av]){
   add(growthLabels[av],value,av>=155?"%":av>=40&&av<=45?"%p":"");
  }
 }
-function appendPendingEffect(positive,negative,label,value,unit="",pending=true){
+function fixedEffectReady(snapshot,value){
+ return Boolean(snapshot.weaponHookReady);
+}
+function appendPendingEffect(positive,negative,label,value,unit="",pending=true,invert=false){
+ value=effectDecimal(value);
  if(!Number.isFinite(value)||value===0) return;
- const list=value>0?positive:negative;
+ const benefit=invert?value<0:value>0;
+ const list=benefit?positive:negative;
  if(!list) return;
  const row=document.createElement("li"), amount=document.createElement("strong");
- amount.className=value>0?"effect-positive":"effect-negative";
+ if(label==="근접무기 추가 고정 피해") row.title="근접무기에만 적용됩니다. 장비와 모든 효과의 추가 피해를 합산하며, 음수 보정은 이 합계만 줄입니다. 합계는 0 미만으로 내려가지 않습니다. 기본 무기 피해는 줄이지 않습니다.";
+ amount.className=benefit?"effect-positive":"effect-negative";
  amount.textContent=(value>0?"+":"−")+Math.abs(value).toLocaleString("ko-KR",{maximumFractionDigits:2})+unit;
  const note=document.createElement("small");
  note.className="muted";note.textContent=" · 미적용";
@@ -1269,8 +1473,15 @@ function updateNativeMeter(){
  if(!nativeEffects||!modal.open||!meterKind) return;
  const positive=document.getElementById("meterPositive"),negative=document.getElementById("meterNegative");
  fillNativeEffects(nativeEffects[meterKind],positive,negative);
- const combat=nativeEffects.unappliedCombat||[];
- appendPendingEffect(positive,negative,"무기 고정 피해",combat[meterKind==="satisfactionValues"?2:1]);
+ const combat=nativeEffects.combatEffects||[];
+ appendPendingEffect(positive,negative,"근접무기 추가 고정 피해",combat[meterKind==="satisfactionValues"?2:1],"",!fixedEffectReady(nativeEffects,combat[meterKind==="satisfactionValues"?2:1]));
+ const [xCost=0,kCost=0,incoming=0,costReady=false,damageReady=false]=nativeEffects.engineEffects||[];
+ const satisfaction=meterKind==="satisfactionValues";
+ const [,karmaSpell=0,spellReady=false]=nativeEffects.destructionEffects||[];
+ if(!satisfaction) appendPendingEffect(positive,negative,"파괴마법 주문 피해",karmaSpell,"%",!spellReady);
+ const spellCost=satisfaction?xCost:kCost;
+ appendPendingEffect(positive,negative,"주문 매지카 소비",spellCost/100,"%",!costReady,true);
+ if(!satisfaction) appendPendingEffect(positive,negative,"받는 피해",incoming/100,"%",!damageReady,true);
  for(const list of [positive,negative]) if(!list.children.length){
   const item=document.createElement("li");item.textContent="해당 효과 없음";list.append(item);
  }
@@ -1286,7 +1497,11 @@ function renderNativeGrowth(snapshot){
  const positive=document.getElementById("overviewCombinedPositive");
  const negative=document.getElementById("overviewCombinedNegative");
  const negatives=document.getElementById("overviewCombinedNegativePanel");
- fillNativeEffects(snapshot.growthValues,positive,negative);
+ const allTotals=new Map();
+ for(const category of [snapshot.karmaValues,snapshot.satisfactionValues,snapshot.nodeValues]){
+  for(const [av,value] of category||[]) allTotals.set(av,(allTotals.get(av)||0)+value);
+ }
+ fillNativeEffects(Array.from(allTotals).filter(([,value])=>value!==0),positive,negative);
  const pureNegative=document.getElementById("purityNegative");
  const pureNegativePanel=document.getElementById("purityNegativePanel");
  const pureTotals=new Map();
@@ -1294,12 +1509,21 @@ function renderNativeGrowth(snapshot){
   for(const [av,value] of category||[]) pureTotals.set(av,(pureTotals.get(av)||0)+value);
  }
  fillNativeEffects(Array.from(pureTotals).filter(([,value])=>value!==0),purity,pureNegative);
- const [purityFlat=0,karmaFlat=0,satisfactionFlat=0,nodeFlat=0,steal=0,basePenalty=0]=snapshot.unappliedCombat||[];
- appendPendingEffect(purity,pureNegative,"무기 고정 피해",purityFlat+karmaFlat+satisfactionFlat+nodeFlat);
- appendPendingEffect(purity,pureNegative,"적중 시 체력 흡수",steal);
+ const [puritySpell=0,karmaSpell=0,spellReady=false]=snapshot.destructionEffects||[];
+ appendPendingEffect(purity,pureNegative,"파괴마법 주문 피해",puritySpell+karmaSpell,"%",!spellReady);
+ appendPendingEffect(positive,negative,"파괴마법 주문 피해",karmaSpell,"%",!spellReady);
+ const [purityFlat=0,karmaFlat=0,satisfactionFlat=0,nodeFlat=0,steal=0,basePenalty=0]=snapshot.combatEffects||[];
+ appendPendingEffect(purity,pureNegative,"근접무기 추가 고정 피해",purityFlat+karmaFlat+satisfactionFlat+nodeFlat,"",!fixedEffectReady(snapshot,purityFlat+karmaFlat+satisfactionFlat+nodeFlat));
+ appendPendingEffect(purity,pureNegative,"적중 시 체력 흡수",steal,"",!snapshot.weaponHookReady);
  pureNegativePanel.hidden=!pureNegative.children.length;
- appendPendingEffect(positive,negative,"무기 고정 피해",karmaFlat+nodeFlat);
- appendPendingEffect(positive,negative,"적중 시 체력 흡수",steal);
+ appendPendingEffect(positive,negative,"근접무기 추가 고정 피해",karmaFlat+satisfactionFlat+nodeFlat,"",!fixedEffectReady(snapshot,karmaFlat+satisfactionFlat+nodeFlat));
+ appendPendingEffect(positive,negative,"적중 시 체력 흡수",steal,"",!snapshot.weaponHookReady);
+ const [xCost=0,kCost=0,incoming=0,costReady=false,damageReady=false]=snapshot.engineEffects||[];
+ for(const [plus,minus] of [[purity,pureNegative],[positive,negative]]){
+  appendPendingEffect(plus,minus,"주문 매지카 소비",(xCost+kCost)/100,"%",!costReady,true);
+  appendPendingEffect(plus,minus,"받는 피해",incoming/100,"%",!damageReady,true);
+ }
+ pureNegativePanel.hidden=!pureNegative.children.length;
  const registered=snapshot.resourcePenaltyRegistered||0;
  appendPendingEffect(positive,negative,"기본 체력·매지카·지구력",-(registered||basePenalty),"%",!registered);
  if(registered&&snapshot.resourcePenaltyBase?.length===3&&snapshot.resourcePenaltyAmounts?.length===3){
@@ -1319,8 +1543,8 @@ function renderNativeGrowth(snapshot){
  combined.classList.toggle("has-penalties",!negatives.hidden);
  const nodeLists=nodeDialog.querySelectorAll("ul");
  fillNativeEffects(snapshot.nodeValues,nodeLists[0],nodeLists[1]);
- appendPendingEffect(nodeLists[0],nodeLists[1],"무기 고정 피해",nodeFlat);
- appendPendingEffect(nodeLists[0],nodeLists[1],"적중 시 체력 흡수",steal);
+ appendPendingEffect(nodeLists[0],nodeLists[1],"근접무기 추가 고정 피해",nodeFlat,"",!fixedEffectReady(snapshot,nodeFlat));
+ appendPendingEffect(nodeLists[0],nodeLists[1],"적중 시 체력 흡수",steal,"",!snapshot.weaponHookReady);
  if(nodeLists[2]){
   nodeLists[2].replaceChildren(...Array.from(nodeLists[0].children).concat(Array.from(nodeLists[1].children)).map(row=>row.cloneNode(true)));
  }
@@ -1331,7 +1555,7 @@ const auraOn=document.getElementById("auraOn"),auraOff=document.getElementById("
 auraOn.addEventListener("click",()=>sendNodeCommand("aura-on"));
 auraOff.addEventListener("click",()=>sendNodeCommand("aura-off"));
 const sceneStats=document.getElementById("sceneStats");
-document.getElementById("showSceneStats").addEventListener("click",()=>sceneStats.showModal());
+document.getElementById("showSceneStats").addEventListener("click",()=>{if(nativeEffects) renderSceneStats(nativeEffects);sceneStats.showModal();if(typeof tdsCommand==="function") sendNodeCommand("recheck");});
 const sceneNames=["누적 횟수","남성","여성","크리처","자위","강압 주도","강압 당함","질","항문","구강"];
 const signed=value=>Number.isFinite(value)?(value>0?"+":"")+value:"—";
 function sceneTable(id,rows){
@@ -1343,19 +1567,33 @@ function sceneTable(id,rows){
    const cell=document.createElement(i===0?"th":"td");
    if(i===0) cell.scope="row";
    cell.textContent=value;
+   if(i>0&&typeof value==="string"&&/^[+−-][0-9]/.test(value)) cell.className=value.startsWith("+")?"effect-positive":"effect-negative";
    row.append(cell);
   });
   table.append(row);
  }
 }
 function renderSceneStats(snapshot){
+ const purityBoundaries=[0,500,1500,3000,6000];
+ const purityStage=purityBoundaries.filter(k=>(snapshot.progression?.corruption??0)>=k).length-1;
+ document.getElementById("scenePurityState").textContent=purityStage>=4 ? "고결함 보정 소멸 · K 6,000 이상" :
+  "고결함 · 양수 만족도 획득 +"+[20,15,10,5][purityStage]+"% · 음수 페널티 "+[25,20,15,10][purityStage]+"% 완화";
+
  sceneTable("sceneWeightRows",sceneNames.map((name,i)=>{
-  const [count,x,k]=snapshot.sceneWeights?.[i]||[];
+  const [,x,k]=snapshot.sceneWeights?.[i]||[];
+  const count=snapshot.stats?.[i];
   return [name,count??"—",signed(x),signed(k)];
  }));
+ document.getElementById("sceneStatsTitle").textContent=snapshot.qa?"통계와 획득량 · 가상 통계":"통계와 획득량";
+ document.querySelectorAll("#sceneWeightRows tr").forEach((row,i)=>{
+  const count=snapshot.stats?.[i];
+  const completed=i===4?Math.max(0,(snapshot.counterKProgress?.[i]?.[0]??1)-1):count;
+  const stage=Math.min(12,Math.max(0,count>=12?12:completed??0));
+  row.children[1].style.color=`hsl(${200-stage*11} 78% 73%)`;
+ });
  const recent=snapshot.recentBlocks||[];
  sceneTable("sceneRecentRows",recent.length?
-  recent.map(([x,k],i)=>[i===0?"가장 최근":i+1,signed(x),signed(k)]):[["기록 없음","—","—"]]);
+  recent.map(([x,k,block,change],i)=>[i===0?"가장 최근":i+1,signed(x),signed(block),signed(change),signed(k)]):[["기록 없음","—","—","—","—"]]);
 }
 const hudSettings=document.getElementById("hudSettings");
 const hudProxy=document.getElementById("hudProxy");
@@ -1435,9 +1673,10 @@ hudProxy.addEventListener("keydown",e=>{
 document.getElementById("resetHudLayout").addEventListener("click",()=>{
  hudDirection.value="0";hudStyle.value="0";hudX=84;hudY=70;hudSize=100;sendHudLayout();
 });
-window.tdsSnapshot=function(raw){
+function applyNativeSnapshot(raw){
  let snapshot;
- try {snapshot=typeof raw==="string" ? JSON.parse(raw) : raw;} catch {return;}
+ try {snapshot=typeof raw==="string" ? JSON.parse(raw) : raw;} catch(error) {throw new Error("snapshot JSON: "+error.message);}
+ if(Number.isSafeInteger(snapshot?.uiRevision) && snapshot.uiRevision<lastAppliedSnapshotRevision) return;
  const state=snapshot?.progression;
  if(!state || !Array.isArray(state.purchaseStatus) || state.purchaseStatus.length!==nativeIds.length) return;
  nativeNodeState=true;
@@ -1452,6 +1691,7 @@ window.tdsSnapshot=function(raw){
   if(!qaActive) openDeveloperTab(developerRequested);
   developerRequested=false;
   qaActive=true;
+  document.getElementById("resetQaStatistics").disabled=false;
   document.getElementById("qaActions").hidden=false;
   qaCounterKeys.forEach((key,i)=>qaDisplay.get(key)(snapshot.stats?.[i]??0));
   qaDisplay.get("X")(state.satisfaction);
@@ -1464,7 +1704,7 @@ window.tdsSnapshot=function(raw){
  overviewNative={n:snapshot.stats?.[0],solo:snapshot.stats?.[4]};
  document.getElementById("overviewPreviewControls").hidden=true;
  xInput.value=String(state.satisfaction);
- kInput.max=String(Math.max(3600,state.corruption));
+ kInput.max=String(Math.max(45000,state.corruption));
  kInput.value=String(state.corruption);
  updateGauges();
  updateOverview();
@@ -1508,6 +1748,14 @@ window.tdsSnapshot=function(raw){
  }
  document.querySelector('main').classList.remove('qa-pending');
  document.getElementById('qaPendingStatus').hidden=true;
+ if(Number.isSafeInteger(snapshot.uiRevision)) {
+  lastAppliedSnapshotRevision=snapshot.uiRevision;
+  sendNodeCommand("snapshot-applied:"+snapshot.uiRevision+","+state.satisfaction+","+state.corruption);
+ }
+}
+window.tdsSnapshot=function(raw){
+ try{applyNativeSnapshot(raw);}
+ catch(error){sendNodeCommand("ui-error:"+String(error.message).slice(0,140));}
 };
 document.getElementById("closeTds").addEventListener("click",()=>sendNodeCommand("close"));
 let escapeHandledAt=-Infinity;
@@ -1528,4 +1776,5 @@ window.addEventListener("keydown",event=>{
  handleEscape();
 },true);
 </script>
+<script src="i18n.js"></script>
 </html>
