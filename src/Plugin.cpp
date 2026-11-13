@@ -62,7 +62,7 @@ using namespace std::chrono_literals;
 
 constexpr auto esp = "TULL Dibella says.esp";
 
-constexpr REL::Version pluginVersion{1, 0, 2, 0};
+constexpr REL::Version pluginVersion{1, 0, 3, 0};
 
 
 
@@ -3725,23 +3725,33 @@ void onMessage(SKSE::MessagingInterface::Message* message)
 
     using M = SKSE::MessagingInterface;
 
-    static bool beesLoaded=false;
+    static bool extendedEslReady=false;
 
-    if (message->type!=M::kDataLoaded && !beesLoaded) return;
+    if (message->type!=M::kDataLoaded && !extendedEslReady) return;
 
     switch (message->type) {
 
-    case M::kDataLoaded:
+    case M::kDataLoaded: {
 
-        beesLoaded=GetModuleHandleW(L"BackportedESLSupport.dll")!=nullptr;
+        const auto v=REL::Module::get().version();
+        const tds::runtime::Version version{v[0],v[1],v[2],v[3]};
+        const bool beesLoaded=!tds::runtime::nativeExtendedEsl(version) &&
+            GetModuleHandleW(L"BackportedESLSupport.dll")!=nullptr;
+        const auto esl=tds::runtime::eslSupport(version,beesLoaded);
+        extendedEslReady=esl!=tds::runtime::EslSupport::Missing;
 
-        if (!beesLoaded) {
+        if (!extendedEslReady) {
 
-            logFile << "TDS_INIT status=BEES_MODULE_MISSING required_for=ESPFE_1_71\n";
+            logFile << "TDS_INIT status=BEES_MODULE_MISSING required_for=ESPFE_1_71 runtime="
+                    << v.string() << '\n';
 
             return;
 
         }
+
+        logFile << "TDS_INIT status=ESL_SUPPORT_READY source="
+                << (esl==tds::runtime::EslSupport::Native ? "NATIVE_ENGINE" : "BEES")
+                << " runtime=" << v.string() << '\n';
 
         providerSha = tdsFileSha(L"Data/Scripts/sslActorStats.pex");
 
@@ -3996,6 +4006,8 @@ void onMessage(SKSE::MessagingInterface::Message* message)
 
         break;
 
+    }
+
     case M::kPreLoadGame:
 
         tds::engine_effects::incomingRate.store(0,std::memory_order_relaxed);
@@ -4079,7 +4091,7 @@ void onMessage(SKSE::MessagingInterface::Message* message)
 // CommonLib NG runtime accessors handle pre/post-629 object layout differences.
 SKSEPluginVersion = [] {
     SKSE::PluginVersionData data{};
-    data.PluginVersion(REL::Version{1,0,2,0});
+    data.PluginVersion(REL::Version{1,0,3,0});
     data.PluginName("SexLabLifetimeProgression");
     data.AuthorName("TULL");
     data.UsesAddressLibrary();
@@ -4139,7 +4151,7 @@ SKSEPluginLoad(const SKSE::LoadInterface* skse)
 
     }
 
-    logFile << std::unitbuf << "TDS version=1.0.2 runtime=" << skse->RuntimeVersion().string()
+    logFile << std::unitbuf << "TDS version=1.0.3 runtime=" << skse->RuntimeVersion().string()
             << " ESPFE_1_71 SE_AE_MULTI_RUNTIME MELEE_GROWTH_REQUIRE_OBSERVED_LOSS\n";
 
     logger = std::make_unique<StatLogger>(logFile);

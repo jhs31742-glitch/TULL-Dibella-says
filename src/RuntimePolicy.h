@@ -20,6 +20,15 @@ constexpr bool accepts(Version value) {
     for (auto version : supported) if (value==version) return true;
     return false;
 }
+enum class EslSupport { Missing, Backport, Native };
+constexpr bool nativeExtendedEsl(Version value) {
+    return accepts(value) && value.minor==6 && value.build>=1130;
+}
+constexpr EslSupport eslSupport(Version value, bool beesLoaded) {
+    if (!accepts(value)) return EslSupport::Missing;
+    if (nativeExtendedEsl(value)) return EslSupport::Native;
+    return beesLoaded ? EslSupport::Backport : EslSupport::Missing;
+}
 struct HitSite {
     std::uint64_t id;
     std::size_t offset;
