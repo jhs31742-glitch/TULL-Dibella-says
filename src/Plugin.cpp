@@ -62,7 +62,7 @@ using namespace std::chrono_literals;
 
 constexpr auto esp = "TULL Dibella says.esp";
 
-constexpr REL::Version pluginVersion{1, 0, 3, 0};
+constexpr REL::Version pluginVersion{1, 0, 4, 0};
 
 
 
@@ -154,6 +154,8 @@ bool statsGap{};
 HardcoreState hardcore;
 
 std::optional<bool> savedHardcore;
+std::optional<tds::SaveSettings> savedSettings;
+std::atomic_bool auraEnabled{};
 
 const char* hardcoreResult = "NONE";
 
@@ -538,6 +540,15 @@ void saveHardcore(SKSE::SerializationInterface* serial)
 
     if (progression.developerMode()) return;
 
+    auto preferences=panel::captureSettings();
+    preferences[7]=auraEnabled ? 1u:0u;
+    if (const auto record=tds::settingsForSave(progression.developerMode(),preferences)) {
+        const bool stored=serial->WriteRecord(tds::settingsRecord,1,*record);
+        logFile << "TDS_SETTINGS event=SAVE status=" << (stored ? "OK" : "FAILED")
+                << " hotkey=" << (*record)[0] << " hud=" << (*record)[1]
+                << " layout=" << tds::hudLayout(*record) << " aura=" << (*record)[7] << '\n';
+    }
+
     saveProgression(serial);
     if(!serial->WriteRecord(tds::equipmentClaimRecord,1,gearClaims))
         logFile << "TDS_GEAR_CLAIM status=SAVE_FAILED\n";
@@ -559,6 +570,8 @@ void loadHardcore(SKSE::SerializationInterface* serial)
 {
 
     savedHardcore.reset();
+    savedSettings.reset();
+    bool seenSettings=false;
 
     std::uint32_t type{}, version{}, length{};
 
@@ -577,6 +590,15 @@ void loadHardcore(SKSE::SerializationInterface* serial)
     progressionRecordInvalid = false;
 
     while (serial->GetNextRecordInfo(type, version, length)) {
+
+        if (type==tds::settingsRecord) {
+            tds::SaveSettings value{};
+            const auto read=length==sizeof(value) ? serial->ReadRecordData(value) : 0;
+            savedSettings=tds::decodeSettings(version,length,read,value,seenSettings);
+            seenSettings=true;
+            if (!savedSettings) logFile << "TDS_SETTINGS event=LOAD status=INVALID_RECORD_DEFAULTS\n";
+            continue;
+        }
 
         if(type==tds::equipmentClaimRecord) {
             std::uint32_t value{};
@@ -669,6 +691,7 @@ void loadHardcore(SKSE::SerializationInterface* serial)
 
 void revertHardcore(SKSE::SerializationInterface*)
 {
+    savedSettings.reset();
     gearClaims=mockGearClaims=0;
     savedGearClaims.reset();
     gearGrantResult=gearGrantGroup=gearGrantSerial=0;
@@ -1520,7 +1543,6 @@ void updateExpiryArm()
 
 std::array<RE::BGSArtObject*,9> auraArts{};
 
-std::atomic_bool auraEnabled{};
 
 bool auraReady{};
 
@@ -2847,6 +2869,18 @@ void startSession(Event event)
 
     }
 
+    auto defaults=panel::captureSettings(); // resetSession has restored INI/defaults.
+    defaults[7]=0;
+    const bool restored=event==Event::Load && savedSettings.has_value();
+    const auto preferences=tds::settingsForLoad(savedSettings,event==Event::Load,defaults);
+    panel::restoreSettings(preferences);
+    auraEnabled=preferences[7]!=0;
+    savedSettings.reset();
+    syncAura();
+    logFile << "TDS_SETTINGS event=APPLY source=" << (restored ? "CO_SAVE" : "DEFAULTS")
+            << " hotkey=" << preferences[0] << " hud=" << preferences[1]
+            << " layout=" << tds::hudLayout(preferences) << " aura=" << preferences[7] << '\n';
+
     requestRead(event);
 
 }
@@ -4043,6 +4077,7 @@ void onMessage(SKSE::MessagingInterface::Message* message)
 
         savedGearClaims.reset();
         gearClaims=mockGearClaims=0;
+        savedSettings.reset();
         savedHardcore.reset();
 
         savedProgression.reset();
@@ -4091,7 +4126,7 @@ void onMessage(SKSE::MessagingInterface::Message* message)
 // CommonLib NG runtime accessors handle pre/post-629 object layout differences.
 SKSEPluginVersion = [] {
     SKSE::PluginVersionData data{};
-    data.PluginVersion(REL::Version{1,0,3,0});
+    data.PluginVersion(REL::Version{1,0,4,0});
     data.PluginName("SexLabLifetimeProgression");
     data.AuthorName("TULL");
     data.UsesAddressLibrary();
@@ -4151,7 +4186,7 @@ SKSEPluginLoad(const SKSE::LoadInterface* skse)
 
     }
 
-    logFile << std::unitbuf << "TDS version=1.0.3 runtime=" << skse->RuntimeVersion().string()
+    logFile << std::unitbuf << "TDS version=1.0.4 runtime=" << skse->RuntimeVersion().string()
             << " ESPFE_1_71 SE_AE_MULTI_RUNTIME MELEE_GROWTH_REQUIRE_OBSERVED_LOSS\n";
 
     logger = std::make_unique<StatLogger>(logFile);

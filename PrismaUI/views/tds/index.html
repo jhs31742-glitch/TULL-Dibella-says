@@ -600,9 +600,9 @@ body.hud-layout-active main{visibility:hidden}
 <dialog id="sceneStats" class="effect-dialog" aria-labelledby="sceneStatsTitle">
  <h2 id="sceneStatsTitle">통계와 획득량</h2>
  <p id="scenePurityState" class="muted"></p>
- <p class="muted">현재 조건에서 해당 횟수만 1 증가할 때의 보정값입니다. 여러 항목이 늘어나는 장면에서는 함께 계산합니다.</p>
- <table class="scene-values"><thead><tr><th scope="col">통계</th><th scope="col">횟수</th><th scope="col">만족도</th><th scope="col">타락도</th></tr></thead><tbody id="sceneWeightRows"></tbody></table>
- <h3>최근 만족도 변화 획득</h3>
+ <p class="muted">다음 1회 예상값입니다. 최근 장면의 실제 합계는 아래 기록을 확인하세요.</p>
+ <table class="scene-values"><thead><tr><th scope="col">통계</th><th scope="col">현재 횟수</th><th scope="col">다음 만족도</th><th scope="col">다음 타락도</th></tr></thead><tbody id="sceneWeightRows"></tbody></table>
+ <h3>최근 장면 실제 획득</h3>
  <table class="scene-values"><thead><tr><th scope="col">순서</th><th scope="col">계산 만족도</th><th scope="col">획득 블록</th><th scope="col">실효 변화</th><th scope="col">획득 타락도</th></tr></thead><tbody id="sceneRecentRows"></tbody></table>
  <form method="dialog"><button class="effect-button">닫기</button></form>
 </dialog>
@@ -1573,6 +1573,11 @@ function sceneTable(id,rows){
   table.append(row);
  }
 }
+function sceneSoloBreakdown(record){
+ const [,total,,,base,extra]=record;
+ if(!Number.isFinite(base)||!Number.isFinite(extra)||base+extra<=0) return null;
+ return {base,extra,other:total-base-extra,total};
+}
 function renderSceneStats(snapshot){
  const purityBoundaries=[0,500,1500,3000,6000];
  const purityStage=purityBoundaries.filter(k=>(snapshot.progression?.corruption??0)>=k).length-1;
@@ -1590,10 +1595,29 @@ function renderSceneStats(snapshot){
   const completed=i===4?Math.max(0,(snapshot.counterKProgress?.[i]?.[0]??1)-1):count;
   const stage=Math.min(12,Math.max(0,count>=12?12:completed??0));
   row.children[1].style.color=`hsl(${200-stage*11} 78% 73%)`;
+  row.title="현재 상태에서 해당 통계만 1회 더 증가할 때의 예상값입니다.";
+  if(i===4) row.title+=" 관계가 없을 때 자위 기본 타락도는 1회차 +3에서 12회차 +36까지, 자위 추가는 +4에서 +48까지 증가합니다. 체위·노드 효과는 함께 정산합니다.";
  });
  const recent=snapshot.recentBlocks||[];
  sceneTable("sceneRecentRows",recent.length?
   recent.map(([x,k,block,change],i)=>[i===0?"가장 최근":i+1,signed(x),signed(block),signed(change),signed(k)]):[["기록 없음","—","—","—","—"]]);
+ const rows=Array.from(document.getElementById("sceneRecentRows").children);
+ recent.forEach((record,i)=>{
+  const parts=sceneSoloBreakdown(record);
+  if(!parts||!rows[i]) return;
+  rows[i].title="자위 기본 "+signed(parts.base)+" · 자위 추가 "+signed(parts.extra)+" · 그 외 통계·보정 "+signed(parts.other)+" · 합계 "+signed(parts.total);
+  if(i>0) return;
+  const row=document.createElement("tr"),cell=document.createElement("td");
+  cell.colSpan=5;cell.style.cssText="font-size:13px;text-align:left;line-height:1.4";
+  for(const [label,value] of [["자위 기본",parts.base],["자위 추가",parts.extra],["그 외 통계·보정",parts.other],["합계",parts.total]]){
+   const item=document.createElement("span");
+   item.style.marginRight="12px";item.style.color=value<0?"#ff8796":"#ff89cc";
+   item.textContent=label+" "+signed(value);
+   item.className=value<0?"effect-negative":"effect-positive";
+   cell.append(item);
+  }
+  row.append(cell);rows[i].after(row);
+ });
 }
 const hudSettings=document.getElementById("hudSettings");
 const hudProxy=document.getElementById("hudProxy");

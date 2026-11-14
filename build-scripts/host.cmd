@@ -17,4 +17,6 @@ EquipmentClaimsTest.exe || exit /b 1
 cl /nologo /std:c++latest /EHsc /utf-8 /Fe:EquipmentLookupTest.exe ..\src\EquipmentLookupTest.cpp || exit /b 1
 EquipmentLookupTest.exe || exit /b 1
 cl /nologo /std:c++latest /EHsc /utf-8 /Fe:RuntimePolicyTest.exe ..\src\RuntimePolicyTest.cpp || exit /b 1
-RuntimePolicyTest.exe
+RuntimePolicyTest.exe || exit /b 1
+cl /nologo /std:c++latest /EHsc /utf-8 /Fe:SaveSettingsTest.exe ..\src\SaveSettingsTest.cpp || exit /b 1
+SaveSettingsTest.exe

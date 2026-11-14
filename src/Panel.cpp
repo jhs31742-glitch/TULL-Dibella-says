@@ -40,6 +40,7 @@ std::atomic_bool captureHotkey{};
 
 void loadHotkey()
 {
+    key=34;shift=true;control=false;alt=false;
     const auto path = std::filesystem::absolute(L"Data/SKSE/Plugins/SexLabLifetimeProgression.ini");
     const auto setting = [&](const wchar_t* name, int fallback) {
         return GetPrivateProfileIntW(L"Hotkey", name, fallback, path.c_str());
@@ -410,6 +411,7 @@ void resetSession()
 {
     close();
     hudSession.reset();
+    loadHotkey();
     if (writeLog) writeLog("TDS_HUD session_reset enabled=0 layout=DEFAULT");
     if (api && view && api->IsValid(view)) api->Destroy(view);
     view=0;
@@ -417,6 +419,26 @@ void resetSession()
     if (api && hud && api->IsValid(hud)) api->Destroy(hud);
     hud=0;
     hudReady=false;
+}
+
+SaveSettings captureSettings()
+{
+    auto settings=defaultSettings;
+    settings[0]=key+(shift?256u:0)+(control?512u:0)+(alt?1024u:0);
+    settings[1]=hudEnabled ? 1u:0u;
+    if (!captureHudLayout(hudLayout,settings)) settings=defaultSettings;
+    return settings;
+}
+
+void restoreSettings(const SaveSettings& settings)
+{
+    if (!validSettings(settings)) return;
+    key=settings[0]&255u;
+    shift=(settings[0]&256u)!=0;
+    control=(settings[0]&512u)!=0;
+    alt=(settings[0]&1024u)!=0;
+    hudEnabled=settings[1]!=0;
+    hudLayout=tds::hudLayout(settings);
 }
 
 void close()

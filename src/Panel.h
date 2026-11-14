@@ -4,6 +4,7 @@
 #include <string_view>
 #include <optional>
 #include <charconv>
+#include "SaveSettings.h"
 
 namespace tds::panel {
 
@@ -26,6 +27,8 @@ void install(std::string (*snapshot)(), void (*action)(Action, unsigned, std::st
 void publish();
 void close();
 void resetSession();
+SaveSettings captureSettings();
+void restoreSettings(const SaveSettings& settings);
 bool hudTickNeeded();
 void tickHud();
 
